@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Petualangan Pengetahuan Ultimate - Edisi Ekspansi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.7.77/Tone.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Fredoka+One&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f9ff;
+            --text-color: #0c4a6e;
+            --card-bg-color: #ffffff;
+            --modal-bg-color: #ffffff;
+            --border-color: #e0e7ff;
+            --header-bg: rgba(255, 255, 255, 0.7);
+            --locked-filter: grayscale(1);
+            --pattern-url: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="%23a8c5ff" fill-opacity="0.1"><circle cx="50" cy="50" r="5" /><circle cx="10" cy="10" r="2" /><circle cx="90" cy="90" r="3" /><circle cx="10" cy="90" r="4" /><circle cx="90" cy="10" r="2" /></g></svg>');
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-color); 
+            transition: background-color 0.5s, color 0.5s;
+            background-image: var(--pattern-url);
+        }
+        .font-brand { font-family: 'Fredoka One', cursive; }
+        .card-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .card-hover:hover { transform: translateY(-10px) scale(1.05); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+        .screen, .modal-overlay { display: none; }
+        .screen.active, .modal-overlay.active { display: flex; animation: fadeIn 0.5s ease-in-out forwards; }
+        .avatar { width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; color: white; transition: transform 0.3s; }
+        .avatar:hover { transform: scale(1.1); }
+        .tts-button:hover, .hint-button:hover { color: #1d4ed8; background-color: #dbeafe; }
+        .avatar-selection { cursor: pointer; border: 4px solid transparent; border-radius: 50%; transition: all 0.2s ease; position: relative; }
+        .avatar-selection.selected { border-color: #2563eb; transform: scale(1.1); box-shadow: 0 0 15px rgba(37, 99, 235, 0.5); }
+        .shop-item { cursor: pointer; border: 4px solid var(--border-color); border-radius: 1.5rem; transition: all 0.2s ease; position: relative; background-color: var(--card-bg-color); }
+        .shop-item:hover { transform: scale(1.05); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .shop-item.owned { border-color: #16a34a; }
+        .shop-item.equipped { border-color: #2563eb; box-shadow: 0 0 20px rgba(37, 99, 235, 0.6); }
+        .shop-item.locked::after { content: '🔒'; position: absolute; top: 8px; right: 8px; font-size: 1.5rem; background: rgba(0,0,0,0.4); color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
+        .price-tag { position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); background: #fbbf24; color: #78350f; font-weight: bold; padding: 2px 10px; border-radius: 99px; font-size: 0.9rem; border: 2px solid white; }
+        .point-animation { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.5rem; font-weight: bold; color: #f59e0b; z-index: 100; animation: floatUp 1.5s ease-out forwards; pointer-events: none; text-shadow: 2px 2px 4px rgba(0,0,0,0.3); }
+        .mascot-tip { position: fixed; bottom: 20px; left: 20px; background-color: white; padding: 15px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); z-index: 100; display: flex; align-items: center; max-width: 300px; animation: slideInUp 0.5s ease-out; }
+        .bonus-world-badge { position: absolute; top: -10px; right: -10px; background-color: #ef4444; color: white; font-weight: bold; font-size: 0.75rem; padding: 2px 8px; border-radius: 99px; transform: rotate(15deg); animation: pulse 1.5s infinite; }
+        .event-banner { background: linear-gradient(45deg, #f87171, #fb923c); color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); animation: pulse-bg 3s infinite; }
+        @keyframes pulse-bg { 0% { background-color: #f87171; } 50% { background-color: #fb923c; } 100% { background-color: #f87171; } }
+
+        body.dark {
+            --bg-color: #0b1120;
+            --text-color: #d1d5db;
+            --card-bg-color: #1f2937;
+            --modal-bg-color: #111827;
+            --border-color: #374151;
+            --header-bg: rgba(31, 41, 55, 0.7);
+            --locked-filter: grayscale(1) invert(0.75);
+            --pattern-url: url('data:image/svg+xml;utf8,<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g fill="%234b5563" fill-opacity="0.2"><circle cx="50" cy="50" r="5" /><circle cx="10" cy="10" r="2" /><circle cx="90" cy="90" r="3" /><circle cx="10" cy="90" r="4" /><circle cx="90" cy="10" r="2" /></g></svg>');
+        }
+        body.high-contrast {
+             --bg-color: #000000;
+             --text-color: #ffffff;
+             --card-bg-color: #1a1a1a;
+             --border-color: #ffffff;
+        }
+        .font-size-small { font-size: 0.875rem; }
+        .font-size-normal { font-size: 1rem; }
+        .font-size-large { font-size: 1.125rem; }
+        
+        .star-animation { animation: star-pop 0.5s ease-in-out; }
+        @keyframes star-pop { 0% { transform: scale(0); } 80% { transform: scale(1.5); } 100% { transform: scale(1); } }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes scaleUp { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes floatUp { from { opacity: 1; transform: translate(-50%, -50%) scale(1); } to { opacity: 0; transform: translate(-50%, -250%) scale(1.5); } }
+        @keyframes slideInUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse { 0%, 100% { transform: scale(1) rotate(15deg); } 50% { transform: scale(1.1) rotate(15deg); } }
+    </style>
+</head>
+<body class="text-gray-800">
+    <audio id="background-music" loop>
+        <source src="https://www.chosic.com/wp-content/uploads/2021/04/purrple-cat-wondering.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="app" class="min-h-screen flex flex-col items-center justify-center p-4">
+
+        <div id="loading-screen" class="screen active text-center flex-col w-full">
+            <h1 class="font-brand text-5xl md:text-7xl text-sky-700 mb-4">Petualangan Pengetahuan</h1>
+            <div class="animate-pulse text-2xl text-gray-600">Mempersiapkan Petualangan...</div>
+        </div>
+        
+        <div id="user-selection-screen" class="screen text-center flex-col w-full max-w-4xl">
+            <h1 class="font-brand text-5xl md:text-7xl text-sky-700 mb-4">Petualangan Pengetahuan</h1>
+            <p class="text-lg md:text-xl text-gray-600 mb-8">Siapa yang akan berpetualang hari ini?</p>
+            <div id="user-list-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8"></div>
+            <button id="add-new-user-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-8 rounded-full shadow-lg transform hover:scale-110 transition-transform duration-300 text-xl">+ Tambah Pengguna Baru</button>
+        </div>
+
+        <div id="name-entry-screen" class="screen flex-col w-full max-w-lg">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl w-full text-center">
+                 <h1 class="font-brand text-4xl text-sky-700 mb-2">Buat Profil Baru</h1>
+                 <p class="text-gray-600 mb-6">Masukkan nama dan pilih avatarmu!</p>
+                 <input type="text" id="player-name-input" placeholder="Contoh: Budi" class="text-center text-2xl p-4 border-2 border-sky-300 rounded-xl shadow-inner focus:border-orange-500 focus:ring-orange-500 mb-6 w-full">
+                 <p class="font-semibold mb-4">Pilih Avatar:</p>
+                 <div id="avatar-selection-container" class="flex justify-center gap-4 mb-8">
+                    </div>
+                 <div class="flex gap-4">
+                    <button id="cancel-new-user-btn" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-3 px-6 rounded-xl shadow-md transition-transform duration-300">Batal</button>
+                    <button id="next-to-level-btn" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform duration-300 disabled:bg-gray-400" disabled>Lanjut</button>
+                 </div>
+            </div>
+        </div>
+        
+        <div id="jenjang-screen" class="screen text-center flex-col w-full max-w-3xl">
+            <h1 class="font-brand text-4xl md:text-6xl text-sky-700 mb-2">Pilih Jenjangmu</h1>
+            <p class="text-lg md:text-xl text-gray-600 mb-8" id="jenjang-prompt-name"></p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+                <button data-jenjang="sd" class="jenjang-btn bg-green-500 hover:bg-green-600 text-white font-bold py-6 px-8 rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-300 text-2xl"><span class="text-4xl block mb-2">🎓</span> SD</button>
+                <button data-jenjang="smp" class="jenjang-btn bg-blue-500 hover:bg-blue-600 text-white font-bold py-6 px-8 rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-300 text-2xl"><span class="text-4xl block mb-2">📚</span> SMP</button>
+                <button data-jenjang="sma" class="jenjang-btn bg-purple-500 hover:bg-purple-600 text-white font-bold py-6 px-8 rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-300 text-2xl"><span class="text-4xl block mb-2">🔬</span> SMA</button>
+                <button data-jenjang="kuliah" class="jenjang-btn bg-red-500 hover:bg-red-600 text-white font-bold py-6 px-8 rounded-2xl shadow-lg transform hover:scale-105 transition-transform duration-300 text-2xl"><span class="text-4xl block mb-2">💼</span> Mahasiswa</button>
+            </div>
+        </div>
+
+        <div id="map-screen" class="screen w-full max-w-7xl mx-auto flex-col">
+            <header class="flex flex-wrap justify-between items-center mb-6 px-4 gap-4 w-full backdrop-blur-sm p-4 rounded-2xl shadow" style="background-color: var(--header-bg)">
+                 <div class="flex items-center gap-4">
+                    <div id="user-avatar-header" class="avatar w-16 h-16 cursor-pointer" title="Ganti Pengguna"></div>
+                    <div>
+                        <h2 class="font-brand text-2xl md:text-4xl text-sky-800" id="welcome-message"></h2>
+                        <h3 class="font-semibold text-lg text-amber-700" id="user-title-display"></h3>
+                        <div class="flex items-center gap-4">
+                            <p class="text-md md:text-lg font-bold text-amber-600" id="points-display"></p>
+                            <p class="text-md md:text-lg font-bold text-red-500" id="streak-display" title="Bonus login beruntun!"></p>
+                        </div>
+                    </div>
+                 </div>
+                 <div class="flex items-center gap-2 flex-wrap justify-center">
+                    <button id="shop-hub-btn" class="bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:scale-105">🛍️ Toko</button>
+                    <button id="daily-mission-btn" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:scale-105">🎯 Misi</button>
+                    <button id="leaderboard-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:scale-105">🥇 Peringkat</button>
+                    <button id="achievements-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:scale-105">🏆 Prestasi</button>
+                    <button id="settings-btn" class="bg-gray-700 hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:scale-105">⚙️</button>
+                </div>
+            </header>
+            <div id="event-banner-container" class="w-full mb-4 px-2"></div>
+            <div class="w-full mb-4 px-2">
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="bg-white/60 p-3 rounded-lg shadow">
+                         <h3 class="font-bold text-center text-sky-800">📚 Kata Hari Ini</h3>
+                         <p id="word-of-the-day" class="text-center text-sm"></p>
+                    </div>
+                    <div class="bg-white/60 p-3 rounded-lg shadow flex items-center justify-around">
+                        <button id="review-mode-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-3 rounded-lg text-sm">🔁 Favorit</button>
+                        <button id="timed-challenge-btn" class="bg-rose-500 hover:bg-rose-600 text-white font-semibold py-2 px-3 rounded-lg text-sm">⏱️ Tantangan Waktu</button>
+                    </div>
+                </div>
+                <input type="text" id="search-bar" placeholder="🔍 Cari dunia atau topik..." class="w-full p-3 rounded-lg border-2 border-sky-200 shadow-sm">
+            </div>
+            <div id="dunia-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 md:gap-8 w-full"></div>
+        </div>
+        
+        <div id="submateri-screen" class="screen w-full max-w-5xl mx-auto flex-col">
+             <div class="flex justify-between items-center w-full mb-10">
+                <div></div>
+                <h2 id="submateri-title" class="font-brand text-4xl md:text-5xl text-center"></h2>
+                <div class="flex items-center gap-2">
+                    <label for="progress-tree-toggle" class="text-sm font-semibold">Pohon</label>
+                    <div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+                        <input type="checkbox" name="progress-tree-toggle" id="progress-tree-toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/>
+                        <label for="progress-tree-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                    </div>
+                </div>
+            </div>
+             <div id="submateri-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+             <div class="text-center mt-8"><button id="back-to-worlds-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transform hover:scale-105">&larr; Kembali ke Peta Dunia</button></div>
+       </div>
+
+       <div id="materi-screen" class="screen w-full max-w-4xl mx-auto bg-white p-6 md:p-10 rounded-2xl shadow-2xl flex-col">
+           <div id="materi-content" class="w-full"></div>
+            <div class="text-center mt-8 w-full"><button id="back-to-submateri-btn" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-6 rounded-full shadow-lg transform hover:scale-105">&larr; Kembali Pilih Materi</button></div>
+       </div>
+    </div>
+
+    <div id="avatar-shop-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-8 shadow-2xl w-full max-w-2xl scale-up">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-brand text-3xl text-violet-600">👕 Toko Avatar 👕</h3>
+                <div class="font-bold text-amber-600 text-xl bg-amber-100 px-4 py-2 rounded-full" id="shop-points-display"></div>
+            </div>
+            <div id="avatar-shop-container" class="grid grid-cols-3 md:grid-cols-4 gap-6 max-h-80 overflow-y-auto p-4 bg-gray-50 rounded-lg">
+                </div>
+            <button id="close-avatar-shop-btn" class="mt-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg w-full">Tutup</button>
+        </div>
+    </div>
+    
+    <div id="shop-hub-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-8 shadow-2xl w-full max-w-2xl scale-up">
+            <h3 class="font-brand text-4xl text-violet-600 text-center mb-6">Pusat Perbelanjaan</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
+                <div id="open-avatar-shop" class="p-6 bg-rose-100 rounded-2xl cursor-pointer card-hover border-2 border-rose-300">
+                    <div class="text-5xl mb-2">👕</div>
+                    <h4 class="font-bold text-xl text-rose-800">Toko Avatar</h4>
+                    <p class="text-sm text-rose-600">Ganti penampilanmu!</p>
+                </div>
+                <div id="open-customization-shop" class="p-6 bg-sky-100 rounded-2xl cursor-pointer card-hover border-2 border-sky-300">
+                    <div class="text-5xl mb-2">🎨</div>
+                    <h4 class="font-bold text-xl text-sky-800">Warung Kustomisasi</h4>
+                    <p class="text-sm text-sky-600">Ubah tema & warna.</p>
+                </div>
+                <div id="open-powerup-shop" class="p-6 bg-amber-100 rounded-2xl cursor-pointer card-hover border-2 border-amber-300">
+                    <div class="text-5xl mb-2">⚡</div>
+                    <h4 class="font-bold text-xl text-amber-800">Pasar Kekuatan</h4>
+                    <p class="text-sm text-amber-600">Beli item bantuan.</p>
+                </div>
+                <div id="open-mascot-shop" class="p-6 bg-emerald-100 rounded-2xl cursor-pointer card-hover border-2 border-emerald-300">
+                    <div class="text-5xl mb-2">🦉</div>
+                    <h4 class="font-bold text-xl text-emerald-800">Butik Cendekia</h4>
+                    <p class="text-sm text-emerald-600">Hiasi maskotmu.</p>
+                </div>
+                 <div id="open-gacha-shop" class="md:col-span-2 p-6 bg-purple-100 rounded-2xl cursor-pointer card-hover border-2 border-purple-300">
+                    <div class="text-5xl mb-2">🎁</div>
+                    <h4 class="font-bold text-xl text-purple-800">Peti Harta Karun</h4>
+                    <p class="text-sm text-purple-600">Dapatkan power-up acak!</p>
+                </div>
+            </div>
+            <button id="close-shop-hub-btn" class="mt-8 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full w-full">Tutup</button>
+        </div>
+    </div>
+    
+    <div id="generic-shop-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-8 shadow-2xl w-full max-w-3xl scale-up">
+            <div class="flex justify-between items-center mb-6">
+                <h3 id="generic-shop-title" class="font-brand text-3xl">Nama Toko</h3>
+                <div class="font-bold text-amber-600 text-xl bg-amber-100 px-4 py-2 rounded-full" id="generic-shop-points"></div>
+            </div>
+            <div id="generic-shop-container" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-80 overflow-y-auto p-4 bg-gray-50 rounded-lg">
+                </div>
+            <button class="generic-shop-close-btn mt-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg w-full">Tutup</button>
+        </div>
+    </div>
+    
+    <div id="settings-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-6 shadow-2xl w-full max-w-md scale-up">
+            <h3 class="font-brand text-3xl text-sky-800 text-center mb-4">Pengaturan</h3>
+            <div class="w-full">
+                <div class="border-b border-gray-200">
+                    <nav class="-mb-px flex space-x-4" aria-label="Tabs">
+                        <button class="settings-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-sky-500 text-sky-600" data-tab="general">Umum</button>
+                        <button class="settings-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="appearance">Tampilan</button>
+                        <button class="settings-tab whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300" data-tab="account">Akun</button>
+                    </nav>
+                </div>
+                <div id="settings-tab-content" class="py-4">
+                    <div class="settings-tab-pane active" id="tab-general">
+                        <div class="flex justify-between items-center p-3 bg-gray-100 rounded-lg mb-3">
+                            <label for="sound-toggle" class="font-semibold">Efek Suara</label>
+                            <button id="sound-toggle" class="text-2xl">🔊</button>
+                        </div>
+                         <div class="flex justify-between items-center p-3 bg-gray-100 rounded-lg mb-3">
+                            <label for="music-toggle" class="font-semibold">Musik Latar</label>
+                            <button id="music-toggle" class="text-2xl">🎵</button>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-gray-100 rounded-lg">
+                            <label for="zen-mode-toggle" class="font-semibold">Mode Zen (Tanpa Skor)</label>
+                            <button id="zen-mode-toggle" class="text-2xl">🧘</button>
+                        </div>
+                    </div>
+                    <div class="settings-tab-pane" id="tab-appearance" style="display: none;">
+                         <span class="block font-semibold mb-2">Tema Tampilan</span>
+                         <div class="flex gap-2" id="theme-selector">
+                             <button data-theme="light" class="w-full p-2 border-2 rounded-lg font-semibold">☀️ Terang</button>
+                             <button data-theme="dark" class="w-full p-2 border-2 rounded-lg font-semibold">🌙 Gelap</button>
+                             <button data-theme="high-contrast" class="w-full p-2 border-2 rounded-lg font-semibold"> Kontras</button>
+                         </div>
+                         <span class="block font-semibold mt-4 mb-2">Ukuran Font</span>
+                         <div class="flex gap-2" id="font-size-selector">
+                             <button data-size="small" class="w-full p-2 border-2 rounded-lg font-semibold">Kecil</button>
+                             <button data-size="normal" class="w-full p-2 border-2 rounded-lg font-semibold">Normal</button>
+                             <button data-size="large" class="w-full p-2 border-2 rounded-lg font-semibold">Besar</button>
+                         </div>
+                    </div>
+                    <div class="settings-tab-pane" id="tab-account" style="display: none;">
+                        <div class="space-y-4">
+                             <div>
+                                <label for="edit-name-input" class="block font-semibold mb-2">Ganti Nama Pengguna</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="edit-name-input" class="w-full p-2 border-2 border-gray-300 rounded-lg">
+                                    <button id="save-name-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg">Simpan</button>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="change-jenjang-select" class="block font-semibold mb-2">Ganti Jenjang</label>
+                                <select id="change-jenjang-select" class="w-full p-2 border-2 border-gray-300 rounded-lg">
+                                    <option value="sd">SD</option><option value="smp">SMP</option><option value="sma">SMA</option><option value="kuliah">Mahasiswa</option>
+                                </select>
+                            </div>
+                             <hr/>
+                            <button id="reset-progress-btn" class="w-full text-left p-3 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg font-bold">🗑️ Reset Progres Pengguna Ini</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button id="close-settings-btn" class="mt-4 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full w-full">Tutup</button>
+        </div>
+    </div>
+    
+    <div id="daily-bonus-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-8 shadow-2xl w-full max-w-sm text-center scale-up">
+            <h3 class="font-brand text-3xl text-yellow-500">Bonus Login Harian!</h3>
+            <div class="text-7xl my-4 animate-bounce">💰</div>
+            <p class="text-gray-600 text-lg mb-2">Kamu mendapatkan <strong class="text-amber-600" id="daily-bonus-amount">50 Poin</strong>!</p>
+            <p class="text-gray-600 text-lg mb-4" id="daily-streak-bonus-text"></p>
+            <button id="close-daily-bonus-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full w-full">Asyik!</button>
+        </div>
+    </div>
+
+    <div id="confirm-reset-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-8 shadow-2xl w-full max-w-sm text-center scale-up">
+            <h3 class="font-bold text-2xl text-red-700">PERINGATAN!</h3>
+            <p class="text-gray-600 my-4">Yakin ingin mereset progres untuk <strong id="reset-username-confirm"></strong>? Semua poin & lencana akan hilang.</p>
+            <div class="flex justify-center gap-4 mt-6">
+                <button id="cancel-reset-btn" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded-full">Batal</button>
+                <button id="confirm-reset-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-full">Ya, Yakin</button>
+            </div>
+        </div>
+    </div>
+    <div id="fun-fact-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-8 shadow-2xl w-full max-w-md text-center scale-up">
+            <div id="mascot-container" class="w-24 h-24 mx-auto mb-4">
+                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g><path d="M50,15 C25,15 10,35 10,55 C10,80 25,95 50,95 C75,95 90,80 90,55 C90,35 75,15 50,15 Z" fill="#4CAF50"/><path d="M35,45 C40,40 50,40 55,45 C60,50 60,60 55,65 L45,65 C40,60 40,50 35,45 Z" fill="#388E3C" transform="translate(-15, 0)"/><path d="M65,45 C60,40 50,40 45,45 C40,50 40,60 45,65 L55,65 C60,60 60,50 65,45 Z" fill="#388E3C" transform="translate(15, 0)"/><circle cx="32" cy="52" r="18" fill="white"/><circle cx="68" cy="52" r="18" fill="white"/><circle cx="33" cy="53" r="8" fill="black"/><circle cx="67" cy="53" r="8" fill="black"/><path d="M50,65 C55,75 45,75 50,65 L52,70 L48,70 Z" fill="#FFC107"/><path d="M20,15 Q30,5 40,15" stroke="#388E3C" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M80,15 Q70,5 60,15" stroke="#388E3C" stroke-width="4" fill="none" stroke-linecap="round"/></g></svg>
+            </div>
+            <h3 class="font-brand text-2xl text-sky-700">Fakta Seru!</h3><p id="fun-fact-text" class="text-gray-700 my-4"></p><button id="close-fun-fact-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full shadow-lg">Lanjut!</button>
+        </div>
+    </div>
+    <div id="achievements-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-8 shadow-2xl w-full max-w-lg scale-up">
+            <div class="flex justify-between items-center mb-4">
+                 <h3 class="font-brand text-3xl text-amber-600 text-center">🏆 Prestasiku 🏆</h3>
+                 <button id="share-progress-btn" title="Bagikan Prestasi" class="bg-blue-500 hover:bg-blue-600 text-white font-bold p-2 rounded-full shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+                 </button>
+            </div>
+            <div id="achievements-list" class="space-y-3 max-h-80 overflow-y-auto"></div><button id="close-achievements-btn" class="mt-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg w-full">Tutup</button>
+        </div>
+    </div>
+    <div id="leaderboard-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-8 shadow-2xl w-full max-w-lg scale-up">
+            <h3 class="font-brand text-3xl text-yellow-600 text-center mb-4">🥇 Papan Peringkat 🥇</h3>
+            <div id="leaderboard-list" class="space-y-2 max-h-80 overflow-y-auto"></div>
+            <button id="close-leaderboard-btn" class="mt-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg w-full">Tutup</button>
+        </div>
+    </div>
+    <div id="daily-mission-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-8 shadow-2xl w-full max-w-md text-center scale-up">
+            <h3 class="font-brand text-3xl text-cyan-600 text-center mb-4">🎯 Misi Harian 🎯</h3>
+            <p id="daily-mission-text" class="text-gray-700 text-lg my-4"></p>
+            <div id="mission-progress-container" class="w-full bg-gray-200 rounded-full h-6 my-4">
+                <div id="mission-progress-bar" class="bg-cyan-500 h-6 rounded-full text-white flex items-center justify-center text-sm font-bold" style="width: 0%;">0%</div>
+            </div>
+            <button id="claim-mission-reward-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full shadow-lg w-full disabled:bg-gray-400 disabled:cursor-not-allowed">Klaim Hadiah</button>
+            <button id="close-daily-mission-btn" class="mt-4 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full shadow-lg w-full">Tutup</button>
+        </div>
+    </div>
+    <div id="certificate-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-slate-50 rounded-2xl p-8 shadow-2xl w-full max-w-2xl scale-up border-8 border-amber-400" style="background-image: url('https://www.transparenttextures.com/patterns/light-paper-fibers.png');">
+            <div class="text-center">
+                 <h2 class="font-brand text-2xl text-gray-500">Sertifikat Petualang Pengetahuan</h2>
+                 <h1 class="font-brand text-5xl text-sky-700 my-4" id="certificate-name"></h1>
+                 <p class="text-lg text-gray-600">Telah dengan gemilang menyelesaikan seluruh tantangan di jenjangnya!</p>
+                 <div class="my-6 text-5xl">🎉 🌟 🎓 🌟 🎉</div>
+                 <div class="flex gap-4 justify-center">
+                    <button id="share-certificate-btn" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-8 rounded-full shadow-lg">Bagikan</button>
+                    <button id="close-certificate-btn" class="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-8 rounded-full shadow-lg">Luar Biasa!</button>
+                 </div>
+            </div>
+        </div>
+    </div>
+     <div id="timed-challenge-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-8 shadow-2xl w-full max-w-xl text-center scale-up">
+            <h3 class="font-brand text-3xl text-rose-600">⏱️ Tantangan Waktu ⏱️</h3>
+            <div id="challenge-timer" class="my-4 text-2xl font-bold"></div>
+            <div id="challenge-question-area"></div>
+            <div id="challenge-feedback" class="mt-4 font-bold"></div>
+            <button id="close-timed-challenge-btn" class="hidden mt-4 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full w-full">Tutup</button>
+        </div>
+    </div>
+     <div id="stats-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-60 items-center justify-center p-4 z-50">
+        <div class="modal-content bg-white rounded-2xl p-8 shadow-2xl w-full max-w-md scale-up">
+            <h3 class="font-brand text-3xl text-sky-800 text-center mb-4" id="stats-username">Statistik Budi</h3>
+            <div id="stats-content" class="space-y-3"></div>
+            <div class="mt-4 flex gap-2">
+                <button id="gift-player-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg">🎁 Kirim Hadiah</button>
+                <button id="challenge-player-btn" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg">⚔️ Tantang</button>
+            </div>
+            <button id="close-stats-btn" class="mt-2 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full w-full">Tutup</button>
+        </div>
+    </div>
+
+    <div id="point-animation-container"></div>
+    <div id="mascot-tip-container"></div>
+
+    <script>
+        // --- DATA APLIKASI ---
+
+        // Database Avatar
+        const avatarData = {
+            'avatar1': { svg: `<svg viewBox="0 0 36 36" fill="none" role="img" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><mask id="mask__beam" maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36"><rect width="36" height="36" fill="#FFFFFF" rx="72"></rect></mask><g mask="url(#mask__beam)"><rect width="36" height="36" fill="#75d475"></rect><rect x="0" y="0" width="36" height="36" transform="translate(4 4) rotate(268 18 18) scale(1.2)" fill="#248038" rx="36"></rect><g transform="translate(-4 -1) rotate(8 18 18)"><path d="M15 21c2 1 4 1 6 0" stroke="#000000" fill="none" stroke-linecap="round"></path><rect x="10" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#000000"></rect><rect x="24" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#000000"></rect></g></g></svg>`, price: 0, isStarter: true },
+            'avatar2': { svg: `<svg viewBox="0 0 36 36" fill="none" role="img" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><mask id="mask__beam" maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36"><rect width="36" height="36" fill="#FFFFFF" rx="72"></rect></mask><g mask="url(#mask__beam)"><rect width="36" height="36" fill="#84b6e0"></rect><rect x="0" y="0" width="36" height="36" transform="translate(0 0) rotate(329 18 18) scale(1.2)" fill="#25648a" rx="36"></rect><g transform="translate(0 5) rotate(-9 18 18)"><path d="M15 21c2 1 4 1 6 0" stroke="#FFFFFF" fill="none" stroke-linecap="round"></path><rect x="14" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#FFFFFF"></rect><rect x="20" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#FFFFFF"></rect></g></g></svg>`, price: 0, isStarter: true },
+            'avatar3': { svg: `<svg viewBox="0 0 36 36" fill="none" role="img" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><mask id="mask__beam" maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36"><rect width="36" height="36" fill="#f0c38e"></rect></mask><g mask="url(#mask__beam)"><rect width="36" height="36" fill="#f0c38e"></rect><rect x="0" y="0" width="36" height="36" transform="translate(8 -6) rotate(114 18 18) scale(1.2)" fill="#a07d58" rx="36"></rect><g transform="translate(4 -4) rotate(-4 18 18)"><path d="M13,21 a8,8 0 0,0 10,0" fill="#000000"></path><rect x="14" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#000000"></rect><rect x="20" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#000000"></rect></g></g></svg>`, price: 0, isStarter: true },
+            'avatar4': { svg: `<svg viewBox="0 0 36 36" fill="none" role="img" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><mask id="mask__beam" maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36"><rect width="36" height="36" fill="#FFFFFF" rx="72"></rect></mask><g mask="url(#mask__beam)"><rect width="36" height="36" fill="#e0a3a3"></rect><rect x="0" y="0" width="36" height="36" transform="translate(-4 -4) rotate(278 18 18) scale(1.1)" fill="#9c5656" rx="64"></rect><g transform="translate(-4 0) rotate(8 18 18)"><path d="M15 19c2 1 4 1 6 0" stroke="#FFFFFF" fill="none" stroke-linecap="round"></path><rect x="11" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#FFFFFF"></rect><rect x="23" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#FFFFFF"></rect></g></g></svg>`, price: 0, isStarter: true },
+            'avatar5': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="mask0_33_33" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36"><circle cx="18" cy="18" r="18" fill="#D9D9D9"/></mask><g mask="url(#mask0_33_33)"><rect width="36" height="36" fill="#F2D4A7"/><ellipse cx="18" cy="33.5" rx="18" ry="13.5" fill="#3B2219"/><path d="M-5 13C-5 5.8203 0.8203 -1.13379e-06 8 -1.13379e-06V13H-5Z" fill="#6A463A"/><path d="M41 13C41 5.8203 35.1797 -1.13379e-06 28 -1.13379e-06V13H41Z" fill="#6A463A"/><rect x="11" y="16" width="3" height="4" rx="1.5" fill="white"/><rect x="22" y="16" width="3" height="4" rx="1.5" fill="white"/><path d="M13 23C13 23 15 25 18 25C21 25 23 23 23 23" stroke="white" stroke-width="2" stroke-linecap="round"/></g></svg>`, price: 200 },
+            'avatar6': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="mask0_33_41" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36"><circle cx="18" cy="18" r="18" fill="white"/></mask><g mask="url(#mask0_33_41)"><rect width="36" height="36" fill="#A7CFF2"/><rect x="11" y="16" width="3" height="4" rx="1.5" fill="#223B4E"/><rect x="22" y="16" width="3" height="4" rx="1.5" fill="#223B4E"/><path d="M13 23L23 23" stroke="#223B4E" stroke-width="2" stroke-linecap="round"/><path d="M11 12L7 9" stroke="#223B4E" stroke-width="2" stroke-linecap="round"/><path d="M25 12L29 9" stroke="#223B4E" stroke-width="2" stroke-linecap="round"/></g></svg>`, price: 250 },
+            'avatar7': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><mask id="mask0_33_49" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36"><circle cx="18" cy="18" r="18" fill="white"/></mask><g mask="url(#mask0_33_49)"><rect width="36" height="36" fill="#F2A7A7"/><path d="M36 18C36 8.05887 27.9411 0 18 0C8.05887 0 0 8.05887 0 18H36Z" fill="#D16F6F"/><rect x="11" y="16" width="3" height="4" rx="1.5" fill="#5A2E2E"/><rect x="22" y="16" width="3" height="4" rx="1.5" fill="#5A2E2E"/><path d="M15 25C15 25 16.5 23 18 23C19.5 23 21 25 21 25" stroke="#5A2E2E" stroke-width="2" stroke-linecap="round"/></g></svg>`, price: 300 },
+            'avatar8': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="18" fill="#BEBEBE"/><rect x="10" y="15" width="4" height="6" fill="#1E1E1E"/><rect x="22" y="15" width="4" height="6" fill="#1E1E1E"/><path d="M10 25L26 25" stroke="#1E1E1E" stroke-width="2"/><path d="M4 11L10 5" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/><path d="M32 11L26 5" stroke="#1E1E1E" stroke-width="2" stroke-linecap="round"/></svg>`, price: 500 },
+            'avatar_astronaut': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><g clip-path="url(#clip0_803_2)"><rect width="36" height="36" rx="18" fill="white"/><rect x="-5" y="15" width="46" height="27" fill="#474D54"/><ellipse cx="18" cy="18" rx="13" ry="12" fill="#75D4EB"/><path d="M18 18L10 18" stroke="white" stroke-width="2" stroke-linecap="round"/><ellipse cx="18" cy="18" rx="10" ry="9" fill="#292D32"/><path d="M22 17C22.5931 18.0538 21.3333 19.3333 20 19C18.6667 18.6667 19.2931 16.9462 20 17C20.7069 17.0538 21.4069 15.9462 22 17Z" fill="white" fill-opacity="0.5"/></g></svg>`, price: 750, name: "Astronot" },
+            'avatar_knight': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="18" fill="#E0E0E0"/><path d="M7 16H29V25H7V16Z" fill="#BDBDBD"/><path d="M11 10H25L29 16H7L11 10Z" fill="#BDBDBD"/><rect x="17" y="18" width="2" height="5" fill="#424242"/><path d="M11 10L18 4L25 10" stroke="#EF5350" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`, price: 800, name: "Ksatria Baja" },
+            'avatar_wizard': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="18" fill="#7E57C2"/><path d="M18 4L8 28H28L18 4Z" fill="#5E35B1"/><circle cx="18" cy="18" r="2" fill="#FDD835"/><path d="M16 18L10 16" stroke="#FDD835" stroke-width="1.5" stroke-linecap="round"/><path d="M20 18L26 16" stroke="#FDD835" stroke-width="1.5" stroke-linecap="round"/><path d="M18 20V26" stroke="#FDD835" stroke-width="1.5" stroke-linecap="round"/></svg>`, price: 850, name: "Penyihir Cahaya" },
+            'avatar_garuda': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="18" fill="#FFC107"/><path d="M18 14C12 14 8 20 8 20H28C28 20 24 14 18 14Z" fill="#F57F17"/><path d="M18 24V18" stroke="#795548" stroke-width="2"/><circle cx="14" cy="18" r="2" fill="black"/><circle cx="22" cy="18" r="2" fill="black"/></svg>`, price: 2000, name: "Garuda Emas" },
+            'avatar_cyborg': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18 0C8.05888 0 0 8.05888 0 18C0 27.9411 8.05888 36 18 36V0Z" fill="#84b6e0"/><path d="M18 0C27.9411 0 36 8.05888 36 18C36 27.9411 27.9411 36 18 36V0Z" fill="#BDBDBD"/><rect x="10" y="14" width="1.5" height="2" rx="1" fill="white"/><rect x="24" y="14" width="2" height="4" rx="1" fill="#FF5252"/></svg>`, price: 1300, name: "Cyborg" },
+            'avatar_detective': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="18" fill="#A1887F"/><path d="M4 18H32V24C32 28.4183 25.6127 32 18 32C10.3873 32 4 28.4183 4 24V18Z" fill="#795548"/><rect x="4" y="16" width="28" height="2" fill="#3E2723"/><circle cx="24" cy="24" r="5" stroke="black" stroke-width="2"/><line x1="28" y1="28" x2="32" y2="32" stroke="black" stroke-width="2"/></svg>`, price: 700, name: "Detektif" },
+            'avatar_ninja': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="18" fill="#424242"/><path d="M4 18H32V20C32 25 28 28 18 28C8 28 4 25 4 20V18Z" fill="#212121"/><path d="M12 18L8 14H28L24 18H12Z" fill="#212121"/><circle cx="14" cy="17" r="2" fill="white"/><circle cx="22" cy="17" r="2" fill="white"/></svg>`, price: 1500, name: "Ninja Bayangan" },
+            'avatar_superhero': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="18" fill="#29B6F6"/><path d="M18 20L8 30L18 26L28 30L18 20Z" fill="#FFCA28"/><path d="M12 12H24V18H12V12Z" fill="#E53935"/><path d="M18 18L15 12H21L18 18Z" fill="#FFCA28"/></svg>`, price: 1750, name: "Pahlawan Super" },
+            'avatar_dj': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="18" fill="#AB47BC"/><rect x="6" y="14" width="24" height="6" fill="#1DE9B6"/><rect x="8" y="15" width="4" height="4" fill="#263238"/><rect x="24" y="15" width="4" height="4" fill="#263238"/><path d="M8 24H12V28H8z" fill="#F06292"/><path d="M24 24H28V28H24z" fill="#F06292"/></svg>`, price: 1200, name: "DJ Musik" },
+            'avatar_chef': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="18" fill="#FF8A65"/><path d="M18 6C12 6 8 10 8 10V16H28V10S24 6 18 6Z" fill="white"/><path d="M13 22C13 22 15 24 18 24C21 24 23 22 23 22" stroke="#4E342E" stroke-width="2" stroke-linecap="round"/></svg>`, price: 1100, name: "Chef Andal" },
+            'avatar_explorer': { svg: `<svg width="80" height="80" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="36" height="36" rx="18" fill="#8D6E63"/><path d="M4 18H32V22C32 26 26 30 18 30C10 30 4 26 4 22V18Z" fill="#A1887F"/><circle cx="12" cy="18" r="4" fill="white"/><circle cx="24" cy="18" r="4" fill="white"/><circle cx="12" cy="18" r="2" fill="black"/><circle cx="24" cy="18" r="2" fill="black"/></svg>`, price: 1400, name: "Penjelajah Hutan" },
+        };
+
+        const shopData = {
+            customization: {
+                title: "Warung Kustomisasi",
+                items: {
+                    'map_space': { name: "Tema Luar Angkasa", icon: "🌌", price: 500, type: "map_theme" },
+                    'map_ocean': { name: "Tema Bawah Laut", icon: "🌊", price: 500, type: "map_theme" },
+                    'palette_sunset': { name: "Palet Matahari Terbenam", icon: "🌅", price: 300, type: "ui_palette" },
+                    'palette_neon': { name: "Palet Neon", icon: "🌃", price: 300, type: "ui_palette" },
+                    'map_library': { name: "Tema Perpustakaan Tua", icon: "📚", price: 700, type: "map_theme" },
+                    'map_beach': { name: "Tema Pantai Tropis", icon: "🏝️", price: 700, type: "map_theme" },
+                    'palette_forest': { name: "Palet Hutan Rindang", icon: "🌲", price: 450, type: "ui_palette" },
+                    'palette_sepia': { name: "Palet Vintage Sepia", icon: "📜", price: 450, type: "ui_palette" },
+                    'sound_8bit': { name: "Paket Suara 8-Bit Retro", icon: "👾", price: 600, type: "sound_pack" },
+                }
+            },
+            powerup: {
+                title: "Pasar Kekuatan",
+                items: {
+                    'double_points': { name: "Pengganda Poin (10 Menit)", icon: "⚡", price: 200, type: "consumable" },
+                    'fifty_fifty': { name: "Penghapus Opsi 50/50", icon: "❓", price: 75, type: "consumable" },
+                    'extra_time': { name: "Waktu Tambahan (+15s)", icon: "⏱️", price: 100, type: "consumable" },
+                    'answer_key': { name: "Kunci Jawaban", icon: "🔑", price: 300, type: "consumable" },
+                    'time_freeze': { name: "Pembeku Waktu", icon: "❄️", price: 150, type: "consumable" },
+                    'mistake_shield': { name: "Perisai Kesalahan", icon: "🛡️", price: 250, type: "consumable" },
+                    'treasure_map': { name: "Peta Harta Karun", icon: "🗺️", price: 100, type: "consumable" },
+                    'streak_booster': { name: "Penguat Streak", icon: "🔥", price: 500, type: "consumable" },
+                }
+            },
+            mascot: {
+                title: "Butik Cendekia",
+                items: {
+                    'monocle': { name: "Kacamata Monocle", icon: "🧐", price: 250, type: "mascot_accessory" },
+                    'grad_hat': { name: "Topi Wisuda", icon: "🎓", price: 300, type: "mascot_accessory" },
+                    'mustache': { name: "Kumis Cendekia", icon: "〰️", price: 350, type: "mascot_accessory" },
+                    'super_cape': { name: "Jubah Super", icon: "🦸", price: 400, type: "mascot_accessory" },
+                    'headphones': { name: "Headphone Keren", icon: "🎧", price: 300, type: "mascot_accessory" },
+                    'king_crown': { name: "Mahkota Raja", icon: "👑", price: 500, type: "mascot_accessory" },
+                    'book_bg': { name: "Latar Belakang Buku", icon: "📖", price: 200, type: "mascot_accessory" },
+                }
+            }
+        };
+
+        const mascotSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g><path d="M50,15 C25,15 10,35 10,55 C10,80 25,95 50,95 C75,95 90,80 90,55 C90,35 75,15 50,15 Z" fill="#4CAF50"/><path d="M35,45 C40,40 50,40 55,45 C60,50 60,60 55,65 L45,65 C40,60 40,50 35,45 Z" fill="#388E3C" transform="translate(-15, 0)"/><path d="M65,45 C60,40 50,40 45,45 C40,50 40,60 45,65 L55,65 C60,60 60,50 65,45 Z" fill="#388E3C" transform="translate(15, 0)"/><circle cx="32" cy="52" r="18" fill="white"/><circle cx="68" cy="52" r="18" fill="white"/><circle cx="33" cy="53" r="8" fill="black"/><circle cx="67" cy="53" r="8" fill="black"/><path d="M50,65 C55,75 45,75 50,65 L52,70 L48,70 Z" fill="#FFC107"/><path d="M20,15 Q30,5 40,15" stroke="#388E3C" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M80,15 Q70,5 60,15" stroke="#388E3C" stroke-width="4" fill="none" stroke-linecap="round"/></g></svg>`;
+
+        // --- DATABASE LENGKAP MATERI (EKSPANSI BESAR) ---
+        const edukasiData = {
+            sd: {
+                dunia: {
+                    // Dunia 1-3 (Sudah ada, tetap dipertahankan)
+                    matematika_dasar: { namaDunia: "Kerajaan Angka", warna: "blue", icon: "🔢", deskripsi: "Jelajahi dunia angka, penjumlahan, dan perkalian yang seru!", subMateri: { 
+                        penjumlahan: { judul: "Penjumlahan Dasar", konten: "<p>Penjumlahan adalah cara menggabungkan dua angka atau lebih. Contoh: 2 + 3 = 5.</p>", funFact: "Simbol tambah (+) sudah digunakan selama lebih dari 500 tahun!", kuis: [{ type: "pilihan-ganda", pertanyaan: "7 + 5 = ?", pilihan: ["10", "11", "12"], jawaban: "12", hint:"Hitung maju 5 langkah dari 7." }] },
+                        pengurangan: { judul: "Pengurangan Dasar", konten: "<p>Pengurangan adalah mengambil sejumlah angka dari angka lain. Contoh: 5 - 2 = 3.</p>", funFact: "Simbol kurang (-) juga diperkenalkan pada waktu yang hampir bersamaan dengan simbol tambah.", kuis: [{ type: "pilihan-ganda", pertanyaan: "9 - 4 = ?", pilihan: ["5", "6", "4"], jawaban: "5", hint:"Hitung mundur 4 langkah dari 9." }] },
+                        perkalian: { judul: "Perkalian Sederhana", konten: "<p>Perkalian adalah penjumlahan berulang. Contoh: 3 x 4 sama dengan 4 + 4 + 4 = 12.</p>", funFact: "Orang Mesir kuno sudah menggunakan perkalian untuk membangun piramida.", kuis: [{ type: "pilihan-ganda", pertanyaan: "6 x 3 = ?", pilihan: ["18", "15", "24"], jawaban: "18", hint:"Jumlahkan 6 sebanyak 3 kali." }] },
+                        pembagian: { judul: "Pembagian Sederhana", konten: "<p>Pembagian adalah membagi suatu jumlah menjadi bagian-bagian yang sama. Contoh: 10 / 2 = 5.</p>", funFact: "Simbol bagi (÷) disebut obelus.", kuis: [{ type: "pilihan-ganda", pertanyaan: "15 / 3 = ?", pilihan: ["4", "5", "6"], jawaban: "5", hint:"Berapa kali 3 muat dalam 15?" }] },
+                        bilangan_cacah: { judul: "Bilangan Cacah", konten: "<p>Bilangan cacah adalah bilangan yang dimulai dari 0, 1, 2, 3, dan seterusnya tanpa henti.</p>", funFact: "Konsep angka nol (0) adalah salah satu penemuan terpenting dalam matematika.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Manakah yang bukan bilangan cacah?", pilihan: ["0", "100", "-5"], jawaban: "-5", hint:"Bilangan cacah tidak negatif." }] },
+                        ganjil_genap: { judul: "Ganjil dan Genap", konten: "<p>Bilangan genap bisa dibagi dua (contoh: 2, 4, 6), sedangkan bilangan ganjil tidak bisa (contoh: 1, 3, 5).</p>", funFact: "Menjumlahkan dua bilangan ganjil selalu menghasilkan bilangan genap.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Angka 17 termasuk bilangan...", pilihan: ["Ganjil", "Genap", "Nol"], jawaban: "Ganjil", hint:"Lihat angka terakhirnya." }] },
+                        nilai_tempat: { judul: "Nilai Tempat", konten: "<p>Dalam angka 123, angka 3 adalah satuan, 2 adalah puluhan, dan 1 adalah ratusan.</p>", funFact: "Sistem nilai tempat memungkinkan kita menulis angka sebesar apapun hanya dengan 10 digit (0-9).", kuis: [{ type: "pilihan-ganda", pertanyaan: "Pada angka 258, angka 5 menempati nilai...", pilihan: ["Satuan", "Puluhan", "Ratusan"], jawaban: "Puluhan", hint:"Itu adalah angka di tengah." }] },
+                        bangun_datar: { judul: "Bangun Datar", konten: "<p>Bangun datar adalah bentuk dua dimensi seperti persegi, lingkaran, dan segitiga.</p>", funFact: "Sarang lebah menggunakan bentuk segienam karena itu cara paling efisien untuk mengisi ruang.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bentuk yang memiliki 3 sisi disebut...", pilihan: ["Persegi", "Lingkaran", "Segitiga"], jawaban: "Segitiga", hint:"'Tri' berarti tiga." }] },
+                        bangun_ruang: { judul: "Bangun Ruang", konten: "<p>Bangun ruang adalah bentuk tiga dimensi seperti kubus, bola, dan kerucut.</p>", funFact: "Gelembung sabun selalu berbentuk bola karena itu bentuk paling hemat energi untuk volume tertentu.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Benda yang bentuknya seperti dadu adalah...", pilihan: ["Bola", "Kubus", "Piramida"], jawaban: "Kubus", hint:"Memiliki 6 sisi yang sama." }] },
+                        pengukuran_panjang: { judul: "Mengukur Panjang", konten: "<p>Kita bisa mengukur panjang dengan satuan seperti sentimeter (cm) dan meter (m). 100 cm = 1 m.</p>", funFact: "Satuan 'meter' awalnya didefinisikan sebagai sepersepuluh juta jarak dari kutub utara ke khatulistiwa.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Alat untuk mengukur panjang adalah...", pilihan: ["Timbangan", "Jam", "Penggaris"], jawaban: "Penggaris", hint:"Benda ini ada di kotak pensilmu." }] },
+                        pengukuran_berat: { judul: "Mengukur Berat", konten: "<p>Kita mengukur berat dengan satuan gram (g) dan kilogram (kg). 1000 g = 1 kg.</p>", funFact: "Satu kilogram awalnya didefinisikan berdasarkan berat satu liter air.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Untuk mengukur berat badan, kita menggunakan...", pilihan: ["Termometer", "Timbangan", "Stopwatch"], jawaban: "Timbangan", hint:"Alat ini ada di puskesmas." }] },
+                        waktu: { judul: "Membaca Jam", konten: "<p>Satu hari ada 24 jam. Satu jam ada 60 menit. Jarum pendek menunjukkan jam, jarum panjang menunjukkan menit.</p>", funFact: "Pembagian jam menjadi 60 menit berasal dari sistem angka bangsa Babilonia kuno.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Jika jarum pendek di angka 3 dan jarum panjang di 12, itu pukul...", pilihan: ["12:03", "03:12", "03:00"], jawaban: "03:00", hint:"Angka 12 pada jarum panjang berarti menit ke-0." }] },
+                        pecahan: { judul: "Mengenal Pecahan", konten: "<p>Pecahan menunjukkan bagian dari keseluruhan. 1/2 berarti satu dari dua bagian yang sama.</p>", funFact: "Kata 'pecahan' berasal dari bahasa Latin 'fractus' yang berarti 'patah'.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Jika sebuah pizza dibagi 4, satu potongnya adalah...", pilihan: ["1/2", "1/3", "1/4"], jawaban: "1/4", hint:"Satu bagian dari total empat." }] },
+                        uang: { judul: "Mengenal Uang", konten: "<p>Uang digunakan untuk membeli barang. Di Indonesia, kita menggunakan Rupiah (Rp).</p>", funFact: "Sebelum ada uang, orang melakukan barter atau tukar-menukar barang.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Mata uang negara Indonesia adalah...", pilihan: ["Ringgit", "Dolar", "Rupiah"], jawaban: "Rupiah", hint:"Sering disingkat Rp." }] },
+                        pola_bilangan: { judul: "Pola Bilangan", konten: "<p>Pola bilangan adalah urutan angka dengan aturan tertentu. Contoh: 2, 4, 6, 8 (ditambah 2).</p>", funFact: "Pola bilangan sering ditemukan di alam, seperti pada kelopak bunga dan cangkang siput.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Angka selanjutnya dari pola 1, 3, 5, 7, ... adalah", pilihan: ["8", "9", "10"], jawaban: "9", hint:"Ini adalah pola bilangan ganjil." }] },
+                        simetri: { judul: "Simetri Lipat", konten: "<p>Simetri lipat adalah jumlah lipatan yang bisa membagi sebuah bangun menjadi dua bagian sama persis.</p>", funFact: "Wajah manusia terlihat simetris, tetapi sebenarnya tidak ada wajah yang benar-benar simetris sempurna.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bangun datar yang memiliki simetri lipat tak terhingga adalah...", pilihan: ["Persegi", "Segitiga", "Lingkaran"], jawaban: "Lingkaran", hint:"Bisa dilipat dari arah mana saja." }] },
+                        data_sederhana: { judul: "Membaca Grafik", konten: "<p>Grafik batang membantu kita melihat data dengan mudah. Batang yang lebih tinggi berarti jumlahnya lebih banyak.</p>", funFact: "Grafik pertama kali digunakan pada akhir abad ke-18 untuk menunjukkan data ekonomi.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Jika batang Apel lebih tinggi dari Jeruk, artinya...", pilihan: ["Apel lebih sedikit", "Apel lebih banyak", "Sama banyak"], jawaban: "Apel lebih banyak", hint:"Tinggi berarti lebih." }] },
+                        sudut: { judul: "Mengenal Sudut", konten: "<p>Sudut terbentuk dari dua garis yang bertemu. Sudut siku-siku besarnya 90 derajat, seperti di pojok buku.</p>", funFact: "Pembagian lingkaran menjadi 360 derajat juga berasal dari Babilonia kuno.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Sudut yang lebih kecil dari siku-siku disebut sudut...", pilihan: ["Tumpul", "Lancip", "Lurus"], jawaban: "Lancip", hint:"Ujungnya terlihat 'tajam'." }] },
+                        keliling: { judul: "Menghitung Keliling", konten: "<p>Keliling adalah jumlah panjang semua sisi sebuah bangun datar. Seperti berjalan mengitari taman.</p>", funFact: "Kata 'perimeter' (keliling) berasal dari bahasa Yunani 'peri' (sekitar) dan 'meter' (ukuran).", kuis: [{ type: "pilihan-ganda", pertanyaan: "Keliling persegi dengan sisi 4 cm adalah...", pilihan: ["8 cm", "12 cm", "16 cm"], jawaban: "16 cm", hint:"Jumlahkan keempat sisinya (4+4+4+4)." }] },
+                        luas: { judul: "Menghitung Luas", konten: "<p>Luas adalah besarnya area di dalam sebuah bangun datar. Rumus luas persegi adalah sisi x sisi.</p>", funFact: "Konsep luas sangat penting untuk petani zaman dulu untuk mengukur ladang mereka.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Luas persegi dengan sisi 5 cm adalah...", pilihan: ["20 cm²", "25 cm²", "30 cm²"], jawaban: "25 cm²", hint:"Kalikan 5 dengan 5." }] }
+                    } },
+                    bahasa_indonesia_sd: { namaDunia: "Pulau Kata", warna: "green", icon: "✍️", deskripsi: "Belajar membaca, menulis, dan menyusun kalimat dengan benar.", subMateri: { 
+                        alfabet: { judul: "Mengenal Alfabet", konten: "<p>Alfabet adalah kumpulan huruf dari A sampai Z. Setiap huruf memiliki bunyinya sendiri.</p>", funFact: "Bahasa Indonesia menggunakan 26 huruf alfabet Latin, sama seperti Bahasa Inggris.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Huruf apa yang datang setelah huruf 'G'?", pilihan: ["F", "H", "I"], jawaban: "H", hint:"E, F, G, ..." }] },
+                        kalimat: { judul: "Membuat Kalimat", konten: "<p>Kalimat adalah rangkaian kata yang memiliki arti. Contoh: 'Budi bermain bola'.</p>", funFact: "Tanda titik (.) digunakan untuk mengakhiri sebuah kalimat berita.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Manakah kalimat yang benar?", pilihan: ["Makan nasi saya", "Saya makan nasi", "Nasi saya makan"], jawaban: "Saya makan nasi", hint:"Urutan S-P-O." }] },
+                        tanda_baca: { judul: "Tanda Baca", konten: "<p>Tanda baca membantu kita mengerti tulisan. Titik (.) untuk berhenti, koma (,) untuk jeda, dan tanda tanya (?) untuk bertanya.</p>", funFact: "Tanda seru (!) dulunya ditulis sebagai kata Latin 'io' yang berarti 'seruan kegembiraan'.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Tanda baca di akhir kalimat 'Siapa namamu' adalah...", pilihan: [".", ",", "?"], jawaban: "?", hint:"Ini adalah kalimat tanya." }] },
+                        kata_benda: { judul: "Kata Benda", konten: "<p>Kata benda adalah kata yang menunjukkan nama orang, tempat, atau benda. Contoh: meja, buku, Rina.</p>", funFact: "Dalam beberapa bahasa, semua kata benda memiliki 'gender' (maskulin atau feminin).", kuis: [{ type: "pilihan-ganda", pertanyaan: "Manakah yang merupakan kata benda?", pilihan: ["Berlari", "Merah", "Kursi"], jawaban: "Kursi", hint:"Ini adalah nama sebuah benda." }] },
+                        kata_kerja: { judul: "Kata Kerja", konten: "<p>Kata kerja adalah kata yang menyatakan suatu tindakan atau perbuatan. Contoh: makan, tidur, belajar.</p>", funFact: "Kata 'kerja' itu sendiri adalah sebuah kata benda!", kuis: [{ type: "pilihan-ganda", pertanyaan: "Manakah yang merupakan kata kerja?", pilihan: ["Membaca", "Cantik", "Sekolah"], jawaban: "Membaca", hint:"Ini adalah sebuah kegiatan." }] },
+                        kata_sifat: { judul: "Kata Sifat", konten: "<p>Kata sifat adalah kata yang menjelaskan kata benda. Contoh: besar, kecil, pintar, rajin.</p>", funFact: "Menambahkan kata 'sangat' atau 'sekali' dapat memperkuat arti kata sifat.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Dalam 'rumah besar', kata yang merupakan kata sifat adalah...", pilihan: ["Rumah", "Besar", "Yang"], jawaban: "Besar", hint:"Kata ini menjelaskan bagaimana rumah itu." }] },
+                        antonim: { judul: "Lawan Kata (Antonim)", konten: "<p>Antonim adalah kata yang artinya berlawanan. Contoh: panas lawannya dingin, besar lawannya kecil.</p>", funFact: "Kata 'antonim' berasal dari bahasa Yunani 'anti' (lawan) dan 'onoma' (nama).", kuis: [{ type: "pilihan-ganda", pertanyaan: "Lawan kata dari 'terang' adalah...", pilihan: ["Cerah", "Gelap", "Siang"], jawaban: "Gelap", hint:"Keadaan saat tidak ada cahaya." }] },
+                        sinonim: { judul: "Persamaan Kata (Sinonim)", konten: "<p>Sinonim adalah kata yang artinya mirip atau sama. Contoh: pintar sama artinya dengan pandai.</p>", funFact: "Menggunakan sinonim membuat tulisan menjadi lebih menarik dan tidak membosankan.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Persamaan kata dari 'senang' adalah...", pilihan: ["Sedih", "Gembira", "Marah"], jawaban: "Gembira", hint:"Perasaan yang sama saat mendapat hadiah." }] },
+                        puisi: { judul: "Mengenal Puisi", konten: "<p>Puisi adalah tulisan yang menggunakan bahasa indah dan seringkali memiliki irama atau sajak.</p>", funFact: "Puisi adalah salah satu bentuk sastra tertua di dunia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Akhiran bunyi yang sama pada baris puisi disebut...", pilihan: ["Bait", "Baris", "Sajak"], jawaban: "Sajak", hint:"Contoh: kelapa dan menyapa." }] },
+                        dongeng: { judul: "Membaca Dongeng", konten: "<p>Dongeng adalah cerita khayalan yang tidak benar-benar terjadi, biasanya mengandung pesan moral.</p>", funFact: "Dongeng 'Cinderella' memiliki lebih dari 500 versi di seluruh dunia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Cerita tentang 'Si Kancil' termasuk jenis...", pilihan: ["Berita", "Dongeng (Fabel)", "Pengumuman"], jawaban: "Dongeng (Fabel)", hint:"Tokohnya adalah hewan yang bisa bicara." }] },
+                        huruf_kapital: { judul: "Huruf Kapital", konten: "<p>Huruf kapital digunakan di awal kalimat, untuk nama orang, nama kota, dan nama hari.</p>", funFact: "Pada mesin tik lama, tidak ada huruf kecil, semuanya kapital!", kuis: [{ type: "pilihan-ganda", pertanyaan: "Penulisan yang benar adalah...", pilihan: ["saya tinggal di Jakarta.", "Saya tinggal di jakarta.", "Saya tinggal di Jakarta."], jawaban: "Saya tinggal di Jakarta.", hint:"Awal kalimat dan nama kota." }] },
+                        SPOK: { judul: "Subjek, Predikat, Objek", konten: "<p>Kalimat sederhana terdiri dari Subjek (siapa), Predikat (melakukan apa), dan Objek (terkena apa). Contoh: Ibu (S) memasak (P) nasi (O).</p>", funFact: "Tidak semua bahasa mengikuti urutan S-P-O seperti Bahasa Indonesia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Dalam kalimat 'Ayah membaca koran', yang menjadi subjek adalah...", pilihan: ["Ayah", "Membaca", "Koran"], jawaban: "Ayah", hint:"Tanyakan 'siapa yang membaca?'." }] },
+                        imbuhan: { judul: "Imbuhan me- dan di-", konten: "<p>Imbuhan 'me-' menunjukkan kalimat aktif (melakukan sesuatu), sedangkan 'di-' menunjukkan kalimat pasif (dikenai sesuatu).</p>", funFact: "Bahasa Indonesia kaya akan imbuhan yang bisa mengubah arti kata dasar.", kuis: [{ type: "pilihan-ganda", pertanyaan: "'Buku itu ... baca oleh Adi'. Imbuhan yang tepat adalah...", pilihan: ["me", "di", "ter"], jawaban: "di", hint:"Buku itu dikenai pekerjaan." }] },
+                        pantun: { judul: "Membuat Pantun", konten: "<p>Pantun adalah puisi lama yang terdiri dari empat baris, dengan sajak a-b-a-b. Dua baris pertama adalah sampiran, dua baris terakhir adalah isi.</p>", funFact: "Pantun adalah warisan budaya tak benda dari Indonesia yang diakui UNESCO.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bagian yang berisi pesan dalam pantun disebut...", pilihan: ["Sampiran", "Isi", "Judul"], jawaban: "Isi", hint:"Terletak di baris ketiga dan keempat." }] },
+                        menulis_surat: { judul: "Menulis Surat", konten: "<p>Surat pribadi biasanya berisi tanggal, salam pembuka, isi surat, salam penutup, dan nama pengirim.</p>", funFact: "Dulu, orang menggunakan merpati pos untuk mengirim surat jarak jauh.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bagian awal surat yang berisi sapaan seperti 'Halo, Sahabatku' disebut...", pilihan: ["Isi surat", "Salam pembuka", "Salam penutup"], jawaban: "Salam pembuka", hint:"Letaknya di paling atas." }] },
+                        kata_depan: { judul: "Kata Depan di, ke, dari", konten: "<p>Kata depan 'di' menunjukkan tempat, 'ke' menunjukkan tujuan, dan 'dari' menunjukkan asal. Penulisannya dipisah dari kata berikutnya.</p>", funFact: "Kesalahan penulisan kata depan adalah salah satu yang paling umum dalam Bahasa Indonesia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Penulisan yang benar adalah...", pilihan: ["dirumah", "di rumah", "di-rumah"], jawaban: "di rumah", hint:"Kata depan untuk tempat harus dipisah." }] },
+                        peribahasa: { judul: "Mengenal Peribahasa", konten: "<p>Peribahasa adalah ungkapan singkat yang memiliki arti kiasan. Contoh: 'Air beriak tanda tak dalam'.</p>", funFact: "Setiap budaya di dunia memiliki peribahasanya sendiri yang mencerminkan kearifan lokal.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Arti dari 'besar kepala' adalah...", pilihan: ["Sakit kepala", "Pintar", "Sombong"], jawaban: "Sombong", hint:"Ini adalah sifat yang tidak baik." }] },
+                        membaca_nyaring: { judul: "Membaca Nyaring", konten: "<p>Membaca nyaring berarti membaca dengan suara keras dan intonasi yang jelas agar orang lain bisa mendengar dan mengerti.</p>", funFact: "Membaca nyaring dapat meningkatkan kemampuan mengingat dan pemahaman.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Saat membaca nyaring, kita harus memperhatikan...", pilihan: ["Kecepatan saja", "Lafal dan intonasi", "Volume saja"], jawaban: "Lafal dan intonasi", hint:"Agar terdengar jelas dan tidak datar." }] },
+                        ringkasan: { judul: "Membuat Ringkasan", konten: "<p>Meringkas adalah menulis kembali sebuah cerita atau teks menjadi lebih pendek dengan mengambil pokok-pokoknya saja.</p>", funFact: "Kemampuan meringkas sangat berguna saat kita harus belajar dari buku yang tebal.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Tujuan utama meringkas adalah...", pilihan: ["Membuat cerita baru", "Menulis ulang semuanya", "Mengambil ide utama"], jawaban: "Mengambil ide utama", hint:"Membuatnya lebih singkat dan padat." }] },
+                        petunjuk: { judul: "Mengikuti Petunjuk", konten: "<p>Teks petunjuk berisi langkah-langkah untuk melakukan sesuatu secara berurutan. Penting untuk mengikutinya dari awal sampai akhir.</p>", funFact: "Resep masakan adalah contoh teks petunjuk yang paling umum.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Jika tidak mengikuti urutan petunjuk, hasilnya bisa...", pilihan: ["Lebih cepat", "Sama saja", "Gagal atau salah"], jawaban: "Gagal atau salah", hint:"Urutan itu penting." }] }
+                     } },
+                    ipa_sd: { namaDunia: "Taman Sains", warna: "yellow", icon: "🌿", deskripsi: "Pelajari tentang hewan, tumbuhan, dan alam sekitar kita.", subMateri: {
+                        hewan: { judul: "Mengenal Hewan", konten: "<p>Ada banyak jenis hewan di dunia. Ada karnivora (pemakan daging), herbivora (pemakan tumbuhan), dan omnivora (pemakan segala).</p>", funFact: "Gajah adalah satu-satunya mamalia yang tidak bisa melompat!", kuis: [{ type: "pilihan-ganda", pertanyaan: "Sapi adalah contoh hewan pemakan...", pilihan: ["Daging", "Tumbuhan", "Segalanya"], jawaban: "Tumbuhan", hint:"Sapi makan rumput." }] },
+                        tumbuhan: { judul: "Bagian-Bagian Tumbuhan", konten: "<p>Tumbuhan memiliki akar untuk menyerap air, batang untuk berdiri tegak, dan daun untuk membuat makanan (fotosintesis).</p>", funFact: "Pohon tertinggi di dunia bisa mencapai ketinggian lebih dari 100 meter, setara gedung 30 lantai!", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bagian tumbuhan yang berfungsi membuat makanan adalah...", pilihan: ["Akar", "Batang", "Daun"], jawaban: "Daun", hint:"Warnanya biasanya hijau." }] },
+                        pancaindra: { judul: "Lima Indra Manusia", konten: "<p>Manusia punya lima indra: mata untuk melihat, telinga untuk mendengar, hidung untuk mencium, lidah untuk mengecap, dan kulit untuk meraba.</p>", funFact: "Hidung manusia bisa membedakan lebih dari 1 triliun bau yang berbeda.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Indra yang digunakan untuk merasakan manisnya gula adalah...", pilihan: ["Mata", "Kulit", "Lidah"], jawaban: "Lidah", hint:"Letaknya di dalam mulut." }] },
+                        air: { judul: "Siklus Air", konten: "<p>Air di bumi selalu berputar. Air laut menguap menjadi awan, lalu turun lagi sebagai hujan. Ini disebut siklus air.</p>", funFact: "Jumlah air di Bumi saat ini sama dengan jumlah air pada zaman dinosaurus.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Uap air yang naik ke langit akan membentuk...", pilihan: ["Pelangi", "Awan", "Angin"], jawaban: "Awan", hint:"Warnanya putih atau kelabu." }] },
+                        cahaya: { judul: "Sifat Cahaya", konten: "<p>Cahaya merambat lurus. Cahaya bisa dipantulkan oleh cermin dan bisa dibiaskan saat melewati air.</p>", funFact: "Pelangi terbentuk karena cahaya matahari dibiaskan oleh titik-titik air hujan.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Benda yang digunakan untuk melihat pantulan diri kita adalah...", pilihan: ["Kaca", "Cermin", "Lensa"], jawaban: "Cermin", hint:"Memiliki permukaan yang mengkilap." }] },
+                        energi: { judul: "Sumber Energi", konten: "<p>Sumber energi terbesar di bumi adalah Matahari. Energi juga bisa berasal dari angin, air, dan makanan yang kita makan.</p>", funFact: "Satu kilatan petir memiliki energi yang cukup untuk menyalakan 100 bola lampu selama sehari.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Kita mendapatkan energi untuk beraktivitas dari...", pilihan: ["Tidur", "Matahari", "Makanan"], jawaban: "Makanan", hint:"Memberi kita tenaga." }] },
+                        wujud_benda: { judul: "Wujud Benda", konten: "<p>Benda memiliki tiga wujud: padat (batu), cair (air), dan gas (udara). Wujud benda bisa berubah, misalnya es mencair menjadi air.</p>", funFact: "Ada wujud benda keempat yang disebut plasma, seperti yang ada pada bintang dan petir.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Perubahan dari cair menjadi padat disebut...", pilihan: ["Mencair", "Menguap", "Membeku"], jawaban: "Membeku", hint:"Seperti saat membuat es batu." }] },
+                        bumi_bulan: { judul: "Bumi dan Bulan", konten: "<p>Bumi adalah planet tempat kita tinggal. Bulan adalah satelit alami Bumi yang mengelilingi Bumi.</p>", funFact: "Jejak kaki para astronot di Bulan akan tetap ada di sana selama jutaan tahun karena tidak ada angin.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Benda langit yang mengelilingi planet kita setiap malam adalah...", pilihan: ["Matahari", "Bintang", "Bulan"], jawaban: "Bulan", hint:"Bersinar karena memantulkan cahaya matahari." }] },
+                        rangka: { judul: "Rangka Manusia", konten: "<p>Rangka adalah susunan tulang-tulang yang memberi bentuk pada tubuh dan melindungi organ penting seperti jantung dan otak.</p>", funFact: "Saat lahir, bayi memiliki sekitar 300 tulang, tapi saat dewasa jumlahnya menjadi 206 karena beberapa tulang menyatu.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Tulang keras yang melindungi otak kita disebut...", pilihan: ["Tulang rusuk", "Tulang belakang", "Tulang tengkorak"], jawaban: "Tulang tengkorak", hint:"Letaknya di kepala." }] },
+                        magnet: { judul: "Gaya Magnet", konten: "<p>Magnet bisa menarik benda-benda yang terbuat dari besi. Magnet memiliki dua kutub, utara dan selatan.</p>", funFact: "Bumi kita adalah sebuah magnet raksasa, itulah sebabnya kompas selalu menunjuk ke utara.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Benda yang TIDAK bisa ditarik magnet adalah...", pilihan: ["Paku", "Peniti", "Kertas"], jawaban: "Kertas", hint:"Terbuat dari kayu." }] },
+                        tanah: { judul: "Jenis Tanah", konten: "<p>Ada berbagai jenis tanah, seperti tanah liat yang lengket, tanah pasir yang berbutir, dan tanah humus yang subur untuk tanaman.</p>", funFact: "Dibutuhkan waktu sekitar 500 tahun untuk membentuk 2 cm lapisan tanah atas secara alami.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Tanah yang paling baik untuk menanam bunga adalah...", pilihan: ["Tanah liat", "Tanah pasir", "Tanah humus"], jawaban: "Tanah humus", hint:"Warnanya gelap dan gembur." }] },
+                        cuaca: { judul: "Mengenal Cuaca", konten: "<p>Cuaca adalah keadaan udara di suatu tempat pada waktu tertentu. Ada cuaca cerah, berawan, dan hujan.</p>", funFact: "Angin adalah udara yang bergerak dari tempat bertekanan tinggi ke tempat bertekanan rendah.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Saat langit gelap dan turun titik-titik air, cuacanya...", pilihan: ["Cerah", "Hujan", "Berangin"], jawaban: "Hujan", hint:"Kita butuh payung." }] },
+                        gaya_gravitasi: { judul: "Gaya Gravitasi", konten: "<p>Gravitasi adalah gaya tarik bumi yang membuat semua benda jatuh ke bawah dan kita tetap menapak di tanah.</p>", funFact: "Di bulan, karena gravitasinya lebih lemah, astronot bisa melompat jauh lebih tinggi.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Apel yang jatuh dari pohon disebabkan oleh gaya...", pilihan: ["Magnet", "Gesek", "Gravitasi"], jawaban: "Gravitasi", hint:"Gaya yang menarik semua benda ke pusat bumi." }] },
+                        sistem_pernapasan: { judul: "Sistem Pernapasan", konten: "<p>Kita bernapas menggunakan paru-paru. Kita menghirup oksigen dari udara dan mengeluarkan karbon dioksida.</p>", funFact: "Setiap hari, rata-rata orang dewasa bernapas sekitar 20.000 kali.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Organ utama yang kita gunakan untuk bernapas adalah...", pilihan: ["Jantung", "Otak", "Paru-paru"], jawaban: "Paru-paru", hint:"Ada sepasang di dalam dada kita." }] },
+                        sistem_pencernaan: { judul: "Sistem Pencernaan", konten: "<p>Makanan yang kita makan diolah oleh sistem pencernaan, mulai dari mulut, lambung, hingga usus.</p>", funFact: "Panjang total usus pada orang dewasa bisa mencapai lebih dari 7 meter!", kuis: [{ type: "pilihan-ganda", pertanyaan: "Setelah dikunyah di mulut, makanan masuk ke...", pilihan: ["Paru-paru", "Jantung", "Lambung"], jawaban: "Lambung", hint:"Di sinilah makanan dicerna oleh asam." }] },
+                        rantai_makanan: { judul: "Rantai Makanan", konten: "<p>Rantai makanan adalah urutan makan dan dimakan. Contoh: rumput dimakan belalang, belalang dimakan katak.</p>", funFact: "Di puncak rantai makanan biasanya ada predator seperti elang atau harimau.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Dalam rantai makanan, tumbuhan berperan sebagai...", pilihan: ["Konsumen", "Produsen", "Pengurai"], jawaban: "Produsen", hint:"Mereka membuat makanannya sendiri." }] },
+                        daur_hidup_kupu: { judul: "Daur Hidup Kupu-kupu", konten: "<p>Kupu-kupu mengalami metamorfosis: dari telur, menjadi ulat (larva), lalu kepompong (pupa), dan akhirnya menjadi kupu-kupu dewasa.</p>", funFact: "Beberapa kupu-kupu tidak pernah makan saat dewasa, mereka hidup dari energi yang disimpan saat menjadi ulat.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Tahap setelah ulat dalam daur hidup kupu-kupu adalah...", pilihan: ["Telur", "Kepompong", "Kupu-kupu"], jawaban: "Kepompong", hint:"Ulat 'berpuasa' di dalam cangkang." }] },
+                        listrik_sederhana: { judul: "Listrik Sederhana", konten: "<p>Listrik bisa menyalakan lampu. Rangkaian listrik sederhana butuh sumber listrik (baterai), kabel, dan lampu.</p>", funFact: "Belut listrik bisa menghasilkan sengatan listrik hingga 600 volt untuk berburu.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Sumber energi listrik pada senter adalah...", pilihan: ["Kabel", "Lampu", "Baterai"], jawaban: "Baterai", hint:"Bentuknya tabung kecil." }] },
+                        bunyi: { judul: "Sumber Bunyi", konten: "<p>Bunyi dihasilkan oleh benda yang bergetar. Gitar berbunyi karena senarnya bergetar, drum berbunyi karena kulitnya bergetar.</p>", funFact: "Di luar angkasa yang hampa udara, tidak ada bunyi sama sekali.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bunyi merambat paling cepat melalui benda...", pilihan: ["Padat", "Cair", "Gas"], jawaban: "Padat", hint:"Partikelnya paling rapat." }] },
+                        pelestarian_alam: { judul: "Menjaga Lingkungan", konten: "<p>Kita harus menjaga lingkungan dengan cara tidak membuang sampah sembarangan, menanam pohon, dan menghemat air.</p>", funFact: "Satu botol plastik membutuhkan waktu lebih dari 450 tahun untuk terurai di alam.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Kegiatan yang baik untuk lingkungan adalah...", pilihan: ["Membuang sampah di sungai", "Menebang pohon", "Menanam pohon"], jawaban: "Menanam pohon", hint:"Membuat udara lebih sejuk." }] }
+                    } },
+                    // Dunia 4: IPS SD
+                    ips_sd: { namaDunia: "Peta Nusantara", warna: "orange", icon: "🗺️", deskripsi: "Kenali peta Indonesia, keragaman suku, dan sejarah pahlawan.", subMateri: {
+                        peta_indonesia: { judul: "Membaca Peta", konten: "<p>Peta adalah gambaran permukaan bumi. Di peta Indonesia, kita bisa melihat pulau-pulau, gunung, dan laut.</p>", funFact: "Nama 'Indonesia' pertama kali muncul pada tahun 1850.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Pulau terbesar di Indonesia adalah...", pilihan: ["Jawa", "Sumatra", "Kalimantan"], jawaban: "Kalimantan", hint:"Pulau ini juga dimiliki oleh Malaysia dan Brunei." }] },
+                        provinsi: { judul: "Provinsi di Indonesia", konten: "<p>Indonesia terbagi menjadi banyak provinsi. Setiap provinsi memiliki ibukotanya sendiri.</p>", funFact: "Indonesia memiliki 38 provinsi, yang terbaru adalah Papua Barat Daya.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Ibukota negara Indonesia adalah...", pilihan: ["Bandung", "Surabaya", "Jakarta"], jawaban: "Jakarta", hint:"Kota ini berada di Pulau Jawa." }] },
+                        kenampakan_alam: { judul: "Kenampakan Alam", konten: "<p>Kenampakan alam adalah bentuk alami di permukaan bumi, seperti gunung, sungai, danau, dan pantai.</p>", funFact: "Gunung tertinggi di Indonesia adalah Puncak Jaya di Papua.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Aliran air yang besar dan panjang disebut...", pilihan: ["Danau", "Sungai", "Laut"], jawaban: "Sungai", hint:"Airnya mengalir dari hulu ke hilir." }] },
+                        suku_bangsa: { judul: "Suku Bangsa", konten: "<p>Indonesia kaya akan suku bangsa. Ada Suku Jawa, Sunda, Batak, Dayak, dan masih banyak lagi, masing-masing dengan budayanya.</p>", funFact: "Ada lebih dari 1.300 suku bangsa yang diakui di Indonesia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Rumah adat Honai berasal dari suku di daerah...", pilihan: ["Sumatra", "Jawa", "Papua"], jawaban: "Papua", hint:"Bentuknya seperti jamur." }] },
+                        rumah_adat: { judul: "Rumah Adat", konten: "<p>Setiap suku di Indonesia memiliki rumah adat yang khas, seperti Rumah Gadang dari Minangkabau dan Joglo dari Jawa.</p>", funFact: "Banyak rumah adat dibangun tanpa paku, melainkan dengan pasak dan ikatan.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Rumah adat dengan atap seperti tanduk kerbau adalah...", pilihan: ["Rumah Gadang", "Rumah Joglo", "Rumah Tongkonan"], jawaban: "Rumah Gadang", hint:"Berasal dari Sumatra Barat." }] },
+                        pakaian_adat: { judul: "Pakaian Adat", konten: "<p>Pakaian adat adalah busana khas suatu daerah yang biasanya dipakai saat upacara atau perayaan penting.</p>", funFact: "Kain batik dan kebaya adalah contoh pakaian tradisional Indonesia yang terkenal di dunia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Blangkon adalah penutup kepala pria yang berasal dari daerah...", pilihan: ["Bali", "Jawa", "Kalimantan"], jawaban: "Jawa", hint:"Sering dipakai bersama beskap." }] },
+                        tarian_daerah: { judul: "Tarian Daerah", konten: "<p>Indonesia memiliki ratusan tarian daerah yang indah, seperti Tari Saman dari Aceh dan Tari Kecak dari Bali.</p>", funFact: "Tari Saman sering disebut 'Tarian Seribu Tangan' karena kekompakan gerakannya.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Tarian yang menceritakan kisah Ramayana dengan suara 'cak-cak' berasal dari...", pilihan: ["Aceh", "Bali", "Jawa"], jawaban: "Bali", hint:"Tarian ini dilakukan oleh banyak pria." }] },
+                        alat_musik: { judul: "Alat Musik Tradisional", konten: "<p>Alat musik tradisional Indonesia sangat beragam, contohnya angklung dari Jawa Barat dan sasando dari NTT.</p>", funFact: "Angklung diakui oleh UNESCO sebagai Warisan Budaya Dunia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Alat musik yang dimainkan dengan cara digoyang adalah...", pilihan: ["Gamelan", "Angklung", "Suling"], jawaban: "Angklung", hint:"Terbuat dari bambu." }] },
+                        kegiatan_ekonomi: { judul: "Kegiatan Ekonomi", konten: "<p>Kegiatan ekonomi adalah usaha manusia untuk memenuhi kebutuhan hidup. Ada petani, nelayan, pedagang, dan guru.</p>", funFact: "Pasar terapung di Kalimantan adalah contoh kegiatan ekonomi yang unik.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Orang yang bekerja menangkap ikan di laut disebut...", pilihan: ["Petani", "Nelayan", "Peternak"], jawaban: "Nelayan", hint:"Pekerjaannya berhubungan dengan laut." }] },
+                        koperasi: { judul: "Mengenal Koperasi", konten: "<p>Koperasi adalah badan usaha yang dimiliki dan dijalankan oleh anggotanya untuk kesejahteraan bersama.</p>", funFact: "Bapak Koperasi Indonesia adalah Mohammad Hatta.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Asas utama dari koperasi adalah...", pilihan: ["Mencari untung sebesar-besarnya", "Kekeluargaan", "Persaingan"], jawaban: "Kekeluargaan", hint:"Dari, oleh, dan untuk anggota." }] },
+                        sejarah_kerajaan: { judul: "Kerajaan Nusantara", konten: "<p>Dulu, di Indonesia terdapat banyak kerajaan Hindu-Buddha dan Islam, seperti Sriwijaya, Majapahit, dan Demak.</p>", funFact: "Kerajaan Majapahit pernah menyatukan hampir seluruh wilayah Nusantara.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Candi Borobudur adalah peninggalan dari kerajaan bercorak...", pilihan: ["Islam", "Hindu-Buddha", "Kristen"], jawaban: "Hindu-Buddha", hint:"Ada banyak stupa dan patung Buddha." }] },
+                        pahlawan_nasional: { judul: "Pahlawan Nasional", konten: "<p>Pahlawan nasional adalah orang yang berjuang untuk kemerdekaan Indonesia, seperti Pangeran Diponegoro, Cut Nyak Dien, dan Ki Hajar Dewantara.</p>", funFact: "Gelar Pahlawan Nasional pertama kali diberikan pada tahun 1959.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Pahlawan wanita yang berjuang dari Aceh adalah...", pilihan: ["R.A. Kartini", "Dewi Sartika", "Cut Nyak Dien"], jawaban: "Cut Nyak Dien", hint:"Ia memimpin perang gerilya." }] },
+                        proklamasi: { judul: "Proklamasi Kemerdekaan", konten: "<p>Proklamasi Kemerdekaan Indonesia dibacakan pada tanggal 17 Agustus 1945 oleh Soekarno dan Hatta.</p>", funFact: "Naskah proklamasi yang asli ditulis tangan oleh Soekarno di rumah Laksamana Maeda.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Kemerdekaan Indonesia diproklamasikan pada tahun...", pilihan: ["1942", "1945", "1950"], jawaban: "1945", hint:"Tahun yang selalu kita rayakan." }] },
+                        tetangga_indonesia: { judul: "Negara Tetangga", konten: "<p>Indonesia berbatasan darat dengan Malaysia, Papua Nugini, dan Timor Leste. Tetangga laut kita antara lain Singapura dan Australia.</p>", funFact: "Indonesia dan Australia berbagi perbatasan laut yang sangat panjang.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Negara yang terletak di sebelah utara Pulau Kalimantan adalah...", pilihan: ["Australia", "Thailand", "Malaysia"], jawaban: "Malaysia", hint:"Ibukotanya Kuala Lumpur." }] },
+                        asean: { judul: "Mengenal ASEAN", konten: "<p>ASEAN adalah organisasi negara-negara di Asia Tenggara. Indonesia adalah salah satu negara pendirinya.</p>", funFact: "Sekretariat ASEAN berada di Jakarta, Indonesia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Kepanjangan dari ASEAN adalah Association of Southeast Asian...", pilihan: ["Networks", "Nations", "Newsmakers"], jawaban: "Nations", hint:"Artinya 'bangsa-bangsa'." }] },
+                        musyawarah: { judul: "Pentingnya Musyawarah", konten: "<p>Musyawarah adalah berdiskusi untuk mencapai keputusan bersama. Ini adalah cerminan sila keempat Pancasila.</p>", funFact: "Musyawarah untuk mufakat adalah salah satu ciri khas demokrasi di Indonesia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Jika ada perbedaan pendapat, sebaiknya diselesaikan dengan...", pilihan: ["Bertengkar", "Voting", "Musyawarah"], jawaban: "Musyawarah", hint:"Mencari jalan tengah." }] },
+                        gotong_royong: { judul: "Gotong Royong", konten: "<p>Gotong royong adalah bekerja bersama-sama untuk menyelesaikan suatu pekerjaan, seperti membersihkan lingkungan.</p>", funFact: "Gotong royong adalah salah satu nilai luhur bangsa Indonesia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Membangun pos ronda bersama-sama adalah contoh...", pilihan: ["Kerja paksa", "Gotong royong", "Tugas individu"], jawaban: "Gotong royong", hint:"Dilakukan secara sukarela." }] },
+                        sumber_daya_alam: { judul: "Sumber Daya Alam", konten: "<p>Sumber daya alam adalah kekayaan alam yang bisa dimanfaatkan, seperti hasil tambang, hutan, dan laut.</p>", funFact: "Indonesia adalah salah satu penghasil timah dan nikel terbesar di dunia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Batu bara dan minyak bumi adalah contoh sumber daya alam yang...", pilihan: ["Dapat diperbarui", "Tidak dapat diperbarui", "Selalu ada"], jawaban: "Tidak dapat diperbarui", hint:"Bisa habis jika dipakai terus." }] },
+                        transportasi: { judul: "Alat Transportasi", konten: "<p>Ada transportasi darat (mobil, kereta), laut (kapal), dan udara (pesawat). Semuanya membantu kita berpindah tempat.</p>", funFact: "Kereta api cepat pertama di Indonesia, Whoosh, bisa melaju hingga 350 km/jam.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Alat transportasi yang terbang di udara adalah...", pilihan: ["Kapal feri", "Kereta api", "Pesawat terbang"], jawaban: "Pesawat terbang", hint:"Memiliki sayap." }] },
+                        komunikasi: { judul: "Alat Komunikasi", konten: "<p>Dulu orang berkomunikasi dengan surat, sekarang ada telepon dan internet yang lebih cepat.</p>", funFact: "Email pertama dikirim pada tahun 1971.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Untuk berbicara dengan orang di tempat yang jauh secara langsung, kita menggunakan...", pilihan: ["Surat", "Telepon", "Koran"], jawaban: "Telepon", hint:"Alat ini bisa dibawa ke mana-mana." }] }
+                     } },
+                    // Dunia 5-20 (Struktur)
+                    pkn_sd: { namaDunia: "Garuda Pancasila", warna: "red", icon: "🇮🇩", deskripsi: "Menjadi warga negara yang baik dengan memahami Pancasila dan aturan." , subMateri: {}},
+                    sbdp_sd: { namaDunia: "Istana Seni", warna: "purple", icon: "🎨", deskripsi: "Bernyanyi, menggambar, dan membuat kerajinan tangan yang indah." , subMateri: {}},
+                    pjok_sd: { namaDunia: "Stadion Juara", warna: "lime", icon: "⚽", deskripsi: "Belajar gerak dasar, olahraga, dan pentingnya hidup sehat." , subMateri: {}},
+                    english_sd: { namaDunia: "English Town", warna: "teal", icon: "🇬🇧", deskripsi: "Learn basic English words for animals, colors, and daily activities." , subMateri: {}},
+                    b_daerah_sd: { namaDunia: "Kampung Adat", warna: "stone", icon: "🏡", deskripsi: "Mengenal bahasa dan aksara daerah asalmu.", subMateri: {}},
+                    agama_sd: { namaDunia: "Taman Religi", warna: "amber", icon: "🕌", deskripsi: "Mempelajari kisah nabi, tempat ibadah, dan hari besar keagamaan.", subMateri: {}},
+                    eksplorasi_dunia: { namaDunia: "Jelajah Dunia", warna: "cyan", icon: "🌍", deskripsi: "Mengenal benua, samudra, dan keajaiban dunia.", subMateri: {}},
+                    dongeng_nusantara: { namaDunia: "Panggung Cerita", warna: "pink", icon: "🎭", deskripsi: "Menyimak cerita rakyat legendaris dari seluruh Indonesia.", subMateri: {}},
+                    kesehatan_diri: { namaDunia: "Klinik Sehat", warna: "rose", icon: "❤️", deskripsi: "Pentingnya sikat gigi, cuci tangan, dan makanan bergizi.", subMateri: {}},
+                    teknologi_dasar: { namaDunia: "Lab Komputer", warna: "indigo", icon: "💻", deskripsi: "Mengenal komputer, internet, dan cara aman menggunakannya.", subMateri: {}},
+                    profesi_cita: { namaDunia: "Kota Impian", warna: "violet", icon: "👩‍🚀", deskripsi: "Mengenal berbagai macam profesi dan pekerjaan seru.", subMateri: {}},
+                    pasar_tradisional: { namaDunia: "Pasar Ria", warna: "fuchsia", icon: "🍎", deskripsi: "Belajar tentang jual beli, tawar menawar, dan macam-macam dagangan.", subMateri: {}},
+                    alam_semesta: { namaDunia: "Galaksi Bimasakti", warna: "slate", icon: "🪐", deskripsi: "Mengenal planet-planet dalam tata surya kita.", subMateri: {}},
+                    transportasi_zaman: { namaDunia: "Terminal Waktu", warna: "orange", icon: "🚂", deskripsi: "Dari delman hingga kereta cepat, lihat perkembangan transportasi.", subMateri: {}},
+                    mitigasi_bencana: { namaDunia: "Desa Siaga", warna: "red", icon: "🌋", deskripsi: "Apa yang harus dilakukan jika terjadi gempa atau banjir?", subMateri: {}},
+                    flora_fauna_langka: { namaDunia: "Cagar Alam", warna: "green", icon: "🐯", deskripsi: "Mengenal hewan dan tumbuhan langka Indonesia yang harus dilindungi.", subMateri: {}},
+                }
+            },
+            smp: { 
+                dunia: {
+                    matematika_smp: { namaDunia: "Labirin Aljabar", warna: "blue", icon: "📈", deskripsi: "Pecahkan misteri aljabar, geometri, dan statistika.", subMateri: {} },
+                    biologi_smp: { namaDunia: "Ekosistem Kehidupan", warna: "green", icon: "🔬", deskripsi: "Selami keajaiban sel, klasifikasi makhluk hidup, dan interaksi.", subMateri: {
+                        sel_hewan_tumbuhan: { judul: "Sel Hewan vs Tumbuhan", konten: "<p>Sel adalah unit terkecil makhluk hidup. Sel tumbuhan memiliki dinding sel, kloroplas, dan vakuola besar yang tidak dimiliki sel hewan.</p>", funFact: "Tubuh manusia dewasa terdiri dari sekitar 37 triliun sel!", kuis: [{ type: "pilihan-ganda", pertanyaan: "Organel yang hanya ada di sel tumbuhan untuk fotosintesis adalah...", pilihan: ["Mitokondria", "Dinding Sel", "Kloroplas"], jawaban: "Kloroplas", hint:"Berhubungan dengan warna hijau daun." }] },
+                        mikroskop: { judul: "Pengenalan Mikroskop", konten: "<p>Mikroskop adalah alat untuk melihat objek yang sangat kecil. Bagian utamanya adalah lensa okuler (untuk melihat) dan lensa objektif (dekat objek).</p>", funFact: "Mikroskop pertama kali ditemukan pada akhir abad ke-16.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bagian mikroskop yang kita gunakan untuk melihat langsung adalah...", pilihan: ["Lensa Objektif", "Lensa Okuler", "Diafragma"], jawaban: "Lensa Okuler", hint:"'Okuler' berhubungan dengan mata." }] },
+                        klasifikasi_mh: { judul: "Klasifikasi Makhluk Hidup", konten: "<p>Makhluk hidup dikelompokkan dalam 5 kingdom: Monera, Protista, Fungi (Jamur), Plantae (Tumbuhan), dan Animalia (Hewan).</p>", funFact: "Ilmu yang mempelajari klasifikasi makhluk hidup disebut Taksonomi.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Jamur tiram termasuk dalam kingdom...", pilihan: ["Plantae", "Fungi", "Protista"], jawaban: "Fungi", hint:"Jamur memiliki kingdomnya sendiri." }] },
+                        ekosistem: { judul: "Komponen Ekosistem", konten: "<p>Ekosistem terdiri dari komponen biotik (makhluk hidup: produsen, konsumen, pengurai) dan abiotik (benda tak hidup: air, cahaya, tanah).</p>", funFact: "Ekosistem terbesar di dunia adalah samudra.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Cahaya matahari dalam sebuah ekosistem termasuk komponen...", pilihan: ["Biotik", "Abiotik", "Produsen"], jawaban: "Abiotik", hint:"Bukan makhluk hidup." }] },
+                        pencemaran: { judul: "Pencemaran Lingkungan", konten: "<p>Pencemaran terjadi saat zat berbahaya masuk ke lingkungan. Ada pencemaran air, udara, dan tanah yang merusak ekosistem.</p>", funFact: "Hujan asam disebabkan oleh polusi udara dari pabrik dan kendaraan.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Asap kendaraan bermotor adalah penyebab utama pencemaran...", pilihan: ["Tanah", "Air", "Udara"], jawaban: "Udara", hint:"Mempengaruhi udara yang kita hirup." }] },
+                        sistem_gerak: { judul: "Sistem Gerak Manusia", konten: "<p>Sistem gerak terdiri dari rangka (tulang) sebagai alat gerak pasif dan otot sebagai alat gerak aktif. Keduanya dihubungkan oleh sendi.</p>", funFact: "Otot terkuat di tubuh manusia berdasarkan ukurannya adalah otot masseter (otot rahang).", kuis: [{ type: "pilihan-ganda", pertanyaan: "Alat gerak aktif pada manusia adalah...", pilihan: ["Tulang", "Sendi", "Otot"], jawaban: "Otot", hint:"Bagian yang bisa berkontraksi." }] },
+                        sistem_peredaran_darah: { judul: "Peredaran Darah", konten: "<p>Jantung memompa darah kaya oksigen ke seluruh tubuh melalui arteri, dan darah kotor kembali ke jantung melalui vena.</p>", funFact: "Setiap hari, jantungmu berdetak sekitar 100.000 kali.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Pembuluh darah yang membawa darah dari jantung ke seluruh tubuh adalah...", pilihan: ["Vena", "Arteri", "Kapiler"], jawaban: "Arteri", hint:"Darahnya masih 'bersih'." }] },
+                        sistem_ekskresi: { judul: "Sistem Ekskresi", konten: "<p>Sistem ekskresi membuang sisa metabolisme. Ginjal menyaring darah menjadi urine, kulit mengeluarkan keringat, paru-paru mengeluarkan CO2.</p>", funFact: "Manusia bisa hidup dengan satu ginjal saja.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Organ yang berfungsi menyaring darah dan menghasilkan urine adalah...", pilihan: ["Hati", "Paru-paru", "Ginjal"], jawaban: "Ginjal", hint:"Bentuknya seperti kacang." }] },
+                        fotosintesis: { judul: "Proses Fotosintesis", konten: "<p>Fotosintesis adalah proses tumbuhan membuat makanan (glukosa) menggunakan cahaya matahari, air, dan karbon dioksida dengan bantuan klorofil.</p>", funFact: "Warna daun menjadi kuning di musim gugur karena klorofilnya rusak.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Gas yang dihasilkan dari proses fotosintesis adalah...", pilihan: ["Oksigen", "Karbon Dioksida", "Nitrogen"], jawaban: "Oksigen", hint:"Gas yang kita butuhkan untuk bernapas." }] },
+                        jaringan_tumbuhan: { judul: "Jaringan Tumbuhan", konten: "<p>Tumbuhan memiliki jaringan epidermis (pelindung), parenkim (penyimpan), dan pengangkut (xilem dan floem).</p>", funFact: "Xilem mengangkut air dari akar ke daun, sementara floem mengangkut hasil fotosintesis dari daun ke seluruh bagian.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Jaringan yang berfungsi mengangkut air dan mineral dari akar adalah...", pilihan: ["Floem", "Xilem", "Epidermis"], jawaban: "Xilem", hint:"Ingat 'X' seperti 'akar' yang menyebar." }] },
+                        pertumbuhan: { judul: "Pertumbuhan & Perkembangan", konten: "<p>Pertumbuhan bersifat kuantitatif (bisa diukur, misal tinggi badan), sedangkan perkembangan bersifat kualitatif (tidak bisa diukur, misal kematangan).</p>", funFact: "Tumbuhan juga dipengaruhi oleh hormon pertumbuhan, seperti auksin.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bertambahnya tinggi sebuah tanaman adalah contoh dari...", pilihan: ["Perkembangan", "Pertumbuhan", "Adaptasi"], jawaban: "Pertumbuhan", hint:"Sesuatu yang bisa diukur dengan penggaris." }] },
+                        adaptasi: { judul: "Adaptasi Makhluk Hidup", konten: "<p>Adaptasi adalah penyesuaian diri terhadap lingkungan. Ada adaptasi morfologi (bentuk tubuh), fisiologi (fungsi tubuh), dan tingkah laku.</p>", funFact: "Bunglon mengubah warna kulitnya adalah contoh adaptasi tingkah laku (mimikri).", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bentuk paruh burung yang berbeda-beda sesuai jenis makanannya adalah adaptasi...", pilihan: ["Fisiologi", "Morfologi", "Tingkah Laku"], jawaban: "Morfologi", hint:"Berhubungan dengan bentuk fisik." }] },
+                        pewarisan_sifat: { judul: "Dasar Pewarisan Sifat", konten: "<p>Sifat dari induk diwariskan ke keturunannya melalui gen yang ada di dalam DNA. Gregor Mendel adalah bapak genetika.</p>", funFact: "Manusia berbagi sekitar 99.9% DNA yang sama satu sama lain.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Pembawa sifat keturunan dari induk kepada anaknya adalah...", pilihan: ["Sel", "Gen", "Otot"], jawaban: "Gen", hint:"Ada di dalam kromosom." }] },
+                        bioteknologi: { judul: "Bioteknologi Konvensional", konten: "<p>Bioteknologi konvensional memanfaatkan mikroorganisme secara langsung, seperti pembuatan tempe (jamur Rhizopus) dan yoghurt (bakteri).</p>", funFact: "Pembuatan roti dan bir sudah menggunakan prinsip bioteknologi sejak ribuan tahun lalu.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Pembuatan tape singkong memanfaatkan mikroorganisme dari kelompok...", pilihan: ["Bakteri", "Virus", "Jamur (ragi)"], jawaban: "Jamur (ragi)", hint:"Prosesnya disebut fermentasi." }] },
+                        sistem_reproduksi: { judul: "Reproduksi Manusia", konten: "<p>Sistem reproduksi manusia memungkinkan terjadinya pembuahan sel telur oleh sel sperma untuk menghasilkan keturunan.</p>", funFact: "Sel telur adalah sel terbesar dalam tubuh manusia, sedangkan sel sperma adalah salah satu yang terkecil.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Proses peleburan antara sel sperma dan sel telur disebut...", pilihan: ["Ovulasi", "Menstruasi", "Fertilisasi"], jawaban: "Fertilisasi", hint:"Disebut juga pembuahan." }] },
+                        virus: { judul: "Virus dan Peranannya", konten: "<p>Virus adalah organisme mikroskopis yang hanya bisa hidup di dalam sel inang. Beberapa menyebabkan penyakit, beberapa bisa dimanfaatkan.</p>", funFact: "Virus berada di antara benda hidup dan mati karena tidak bisa bereproduksi sendiri.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Penyakit flu disebabkan oleh infeksi...", pilihan: ["Bakteri", "Jamur", "Virus"], jawaban: "Virus", hint:"Namanya virus influenza." }] },
+                        indra_pendengaran: { judul: "Indra Pendengaran", konten: "<p>Telinga menangkap getaran suara, yang kemudian diubah menjadi sinyal listrik di telinga dalam dan dikirim ke otak.</p>", funFact: "Tulang terkecil di tubuh manusia ada di telinga, yaitu tulang sanggurdi.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bagian telinga yang berfungsi menangkap getaran suara pertama kali adalah...", pilihan: ["Gendang telinga", "Rumah siput", "Daun telinga"], jawaban: "Gendang telinga", hint:"Seperti kulit pada drum." }] },
+                        indra_penglihatan: { judul: "Indra Penglihatan", konten: "<p>Cahaya masuk melalui pupil, difokuskan oleh lensa, dan ditangkap oleh retina di bagian belakang mata.</p>", funFact: "Otot mata adalah otot yang paling aktif di seluruh tubuh.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bagian mata yang berfungsi mengatur jumlah cahaya yang masuk adalah...", pilihan: ["Kornea", "Pupil", "Retina"], jawaban: "Pupil", hint:"Bisa membesar dan mengecil." }] },
+                        zat_aditif: { judul: "Zat Aditif Makanan", konten: "<p>Zat aditif adalah bahan yang ditambahkan ke makanan untuk pewarna, pemanis, atau pengawet. Ada yang alami dan buatan.</p>", funFact: "Kunyit adalah contoh pewarna alami berwarna kuning.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Gula dan garam adalah contoh zat aditif yang berfungsi sebagai...", pilihan: ["Pewarna", "Pengawet alami", "Pemanis buatan"], jawaban: "Pengawet alami", hint:"Membuat makanan lebih tahan lama." }] },
+                        zat_adiktif: { judul: "Zat Adiktif & Psikotropika", konten: "<p>Zat adiktif menyebabkan kecanduan. Contohnya nikotin pada rokok dan kafein pada kopi. Narkotika dan psikotropika sangat berbahaya.</p>", funFact: "Kafein adalah zat psikoaktif yang paling banyak dikonsumsi di dunia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Zat berbahaya dalam rokok yang menyebabkan kecanduan adalah...", pilihan: ["Tar", "Nikotin", "Karbon monoksida"], jawaban: "Nikotin", hint:"Namanya mirip dengan nama orang." }] }
+                     } },
+                    fisika_smp: { namaDunia: "Dimensi Energi", warna: "red", icon: "⚛️", deskripsi: "Jelajahi hukum gerak, kelistrikan, dan fenomena optik.", subMateri: {} },
+                    kimia_smp: { namaDunia: "Laboratorium Unsur", warna: "purple", icon: "🧪", deskripsi: "Campurkan unsur, pelajari reaksi kimia, dan pahami materi.", subMateri: {} },
+                    ips_terpadu_smp: { namaDunia: "Peradaban Dunia", warna: "orange", icon: "🏛️", deskripsi: "Dari zaman pra-aksara hingga interaksi global modern.", subMateri: {} },
+                    b_indonesia_smp: { namaDunia: "Arena Sastra", warna: "yellow", icon: "📖", deskripsi: "Analisis teks berita, ciptakan cerpen, dan kuasai majas.", subMateri: {} },
+                    english_smp: { namaDunia: "Global Village", warna: "teal", icon: "🌐", deskripsi: "Mastering tenses, writing descriptive texts, and daily conversations.", subMateri: {} },
+                    informatika_smp: { namaDunia: "Bengkel Digital", warna: "indigo", icon: "🤖", deskripsi: "Dasar-dasar algoritma, logika pemrograman, dan keamanan siber.", subMateri: {} },
+                    seni_budaya_smp: { namaDunia: "Galeri Nusantara", warna: "fuchsia", icon: "🎶", deskripsi: "Apresiasi seni rupa, musik, dan teater dari berbagai daerah.", subMateri: {} },
+                    pkn_smp: { namaDunia: "Kapsul Konstitusi", warna: "stone", icon: "⚖️", deskripsi: "Memahami norma, UUD 1945, dan sistem pemerintahan.", subMateri: {} },
+                    pjok_smp: { namaDunia: "Olimpiade Sekolah", warna: "lime", icon: "🏆", deskripsi: "Teknik lanjutan olahraga populer dan kebugaran jasmani.", subMateri: {} },
+                    prakarya_smp: { namaDunia: "Studio Kreasi", warna: "amber", icon: "🛠️", deskripsi: "Dari kerajinan tangan hingga dasar-dasar rekayasa.", subMateri: {} },
+                    geografi_smp: { namaDunia: "Atlas Interaktif", warna: "cyan", icon: "🌏", deskripsi: "Letak astronomis, kondisi iklim, dan interaksi antarruang.", subMateri: {} },
+                    ekonomi_smp: { namaDunia: "Simulasi Pasar", warna: "rose", icon: "💰", deskripsi: "Prinsip dasar permintaan, penawaran, dan kewirausahaan.", subMateri: {} },
+                    sejarah_smp: { namaDunia: "Mesin Waktu", warna: "slate", icon: "⏳", deskripsi: "Jejak masa kolonialisme hingga perjuangan kemerdekaan.", subMateri: {} },
+                    b_daerah_smp: { namaDunia: "Sastra Lokal", warna: "orange", icon: "📜", deskripsi: "Mempelajari sastra dan unggah-ungguh bahasa daerah.", subMateri: {} },
+                    konseling_smp: { namaDunia: "Ruang Curhat", warna: "pink", icon: "🧠", deskripsi: "Kenali dirimu, kelola emosi, dan rencanakan masa depanmu.", subMateri: {} },
+                    ekologi_smp: { namaDunia: "Planet Hijau", warna: "green", icon: "♻️", deskripsi: "Isu pemanasan global, daur ulang, dan konservasi.", subMateri: {} },
+                    astronomi_smp: { namaDunia: "Observatorium Bintang", warna: "violet", icon: "🔭", deskripsi: "Mengenal galaksi, bintang, dan fenomena langit lainnya.", subMateri: {} },
+                    kesehatan_reproduksi: { namaDunia: "Pendidikan Sehat", warna: "red", icon: "🧬", deskripsi: "Memahami pubertas dan pentingnya menjaga kesehatan reproduksi.", subMateri: {} },
+                }
+             },
+            sma: {
+                dunia: {
+                    // Kelompok IPA
+                    matematika_ipa_sma: { namaDunia: "Kalkulus Vektor", warna: "blue", icon: "∫", deskripsi: "Taklukkan limit, turunan, integral, dan dimensi tiga.", subMateri: {} },
+                    fisika_sma: { namaDunia: "Quantum Realitas", warna: "red", icon: "⚡", deskripsi: "Dari mekanika Newton hingga fisika modern dan relativitas.", subMateri: {} },
+                    kimia_sma: { namaDunia: "Ikatan Molekul", warna: "purple", icon: "⌬", deskripsi: "Stoikiometri, laju reaksi, termokimia, dan kimia karbon.", subMateri: {
+                        hakikat_kimia: { judul: "Hakikat Ilmu Kimia", konten: "<p>Ilmu kimia adalah studi tentang materi, sifatnya, strukturnya, dan perubahan yang dialaminya. Ini adalah ilmu pusat yang menghubungkan fisika, biologi, dan geologi.</p>", funFact: "Hampir semua yang Anda sentuh, lihat, atau rasakan melibatkan kimia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Cabang ilmu yang mempelajari materi dan perubahannya disebut...", pilihan: ["Fisika", "Biologi", "Kimia"], jawaban: "Kimia", hint:"Ilmu tentang molekul dan reaksi." }] },
+                        struktur_atom: { judul: "Struktur Atom Modern", konten: "<p>Atom terdiri dari proton (positif) dan neutron (netral) di dalam inti, serta elektron (negatif) yang bergerak di orbital sekitarnya. Model atom modern bersifat probabilistik.</p>", funFact: "Jika inti atom seukuran kelereng, elektron terdekat akan berada sejauh setengah kilometer!", kuis: [{ type: "pilihan-ganda", pertanyaan: "Partikel subatomik yang bermuatan negatif adalah...", pilihan: ["Proton", "Neutron", "Elektron"], jawaban: "Elektron", hint:"Mengorbit di luar inti." }] },
+                        sistem_periodik: { judul: "Sistem Periodik Unsur", konten: "<p>Tabel periodik mengatur unsur berdasarkan nomor atom. Sifat unsur (jari-jari atom, energi ionisasi) menunjukkan tren periodik yang dapat diprediksi.</p>", funFact: "Ada beberapa unsur dalam tabel periodik yang dinamai menurut nama ilmuwan, seperti Einsteinium (Es).", kuis: [{ type: "pilihan-ganda", pertanyaan: "Unsur-unsur dalam satu golongan (kolom vertikal) memiliki kemiripan dalam...", pilihan: ["Jumlah proton", "Jumlah elektron valensi", "Nomor periode"], jawaban: "Jumlah elektron valensi", hint:"Menentukan sifat kimia yang mirip." }] },
+                        ikatan_kimia: { judul: "Ikatan Ion dan Kovalen", konten: "<p>Ikatan ion terbentuk karena transfer elektron (logam & non-logam), sedangkan ikatan kovalen terbentuk karena pemakaian bersama elektron (non-logam & non-logam).</p>", funFact: "Berlian sangat keras karena setiap atom karbonnya terikat secara kovalen dengan empat atom karbon lainnya.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Jenis ikatan yang terbentuk antara Na (logam) dan Cl (non-logam) adalah...", pilihan: ["Ion", "Kovalen", "Logam"], jawaban: "Ion", hint:"Terjadi serah terima elektron." }] },
+                        stoikiometri: { judul: "Konsep Mol dan Stoikiometri", konten: "<p>Stoikiometri adalah perhitungan kuantitatif reaktan dan produk dalam reaksi kimia. Konsep mol (6,02 x 10²³ partikel) adalah kuncinya.</p>", funFact: "Satu mol butiran pasir akan menutupi kota Los Angeles dengan kedalaman 600 meter.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bilangan Avogadro memiliki nilai sebesar...", pilihan: ["6,02 x 10²³", "3,14 x 10¹⁰", "2,99 x 10⁸"], jawaban: "6,02 x 10²³", hint:"Digunakan untuk menghitung jumlah partikel." }] },
+                        larutan_elektrolit: { judul: "Larutan Elektrolit & Non", konten: "<p>Larutan elektrolit dapat menghantarkan listrik karena mengandung ion-ion yang bergerak bebas (garam, asam, basa). Larutan non-elektrolit tidak (gula).</p>", funFact: "Air murni sebenarnya bukan penghantar listrik yang baik.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Larutan garam dapur (NaCl) dapat menghantarkan listrik karena...", pilihan: ["Molekulnya bergerak", "Terionisasi menjadi Na⁺ dan Cl⁻", "Bereaksi dengan air"], jawaban: "Terionisasi menjadi Na⁺ dan Cl⁻", hint:"Adanya ion bebas." }] },
+                        asam_basa: { judul: "Teori Asam Basa", konten: "<p>Menurut Arrhenius, asam menghasilkan H⁺ dalam air, basa menghasilkan OH⁻. pH adalah ukuran keasaman; pH < 7 asam, pH > 7 basa, pH = 7 netral.</p>", funFact: "Perut Anda menghasilkan asam klorida (HCl) yang sangat kuat untuk mencerna makanan.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Suatu larutan dengan pH 3 bersifat...", pilihan: ["Asam", "Basa", "Netral"], jawaban: "Asam", hint:"pH di bawah 7." }] },
+                        hidrokarbon: { judul: "Senyawa Hidrokarbon", konten: "<p>Hidrokarbon (alkana, alkena, alkuna) adalah senyawa yang hanya terdiri dari hidrogen dan karbon. Mereka adalah komponen utama minyak bumi.</p>", funFact: "Gas yang digunakan untuk memasak (LPG) sebagian besar adalah propana dan butana, keduanya alkana.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Senyawa hidrokarbon yang memiliki ikatan rangkap dua disebut...", pilihan: ["Alkana", "Alkena", "Alkuna"], jawaban: "Alkena", hint:"Berakhiran -ena." }] },
+                        termokimia: { judul: "Entalpi dan Termokimia", konten: "<p>Termokimia mempelajari perubahan kalor dalam reaksi. Reaksi eksoterm melepaskan kalor (ΔH negatif), endoterm menyerap kalor (ΔH positif).</p>", funFact: "Kantong kompres dingin instan bekerja berdasarkan reaksi endoterm.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Reaksi pembakaran kayu adalah contoh reaksi...", pilihan: ["Endoterm", "Eksoterm", "Netral"], jawaban: "Eksoterm", hint:"Menghasilkan panas." }] },
+                        laju_reaksi: { judul: "Faktor Laju Reaksi", konten: "<p>Laju reaksi dipengaruhi oleh konsentrasi, suhu, luas permukaan, dan katalis. Semakin tinggi suhu, laju reaksi semakin cepat.</p>", funFact: "Katalis dalam sistem knalpot mobil mengubah polutan berbahaya menjadi gas yang lebih aman.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Memotong daging menjadi kecil-kecil agar lebih cepat matang adalah penerapan faktor...", pilihan: ["Suhu", "Konsentrasi", "Luas permukaan"], jawaban: "Luas permukaan", hint:"Bagian yang bersentuhan lebih banyak." }] },
+                        kesetimbangan_kimia: { judul: "Kesetimbangan Kimia", konten: "<p>Kesetimbangan kimia terjadi pada reaksi reversibel ketika laju reaksi maju sama dengan laju reaksi balik. Prinsip Le Chatelier menjelaskan pergeseran kesetimbangan.</p>", funFact: "Produksi amonia untuk pupuk (proses Haber-Bosch) adalah penerapan industri dari kesetimbangan kimia.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Jika suhu pada reaksi eksoterm yang setimbang dinaikkan, kesetimbangan akan bergeser ke arah...", pilihan: ["Produk (kanan)", "Reaktan (kiri)", "Tidak bergeser"], jawaban: "Reaktan (kiri)", hint:"Sistem akan melawan kenaikan suhu." }] },
+                        koloid: { judul: "Sistem Koloid", konten: "<p>Koloid adalah campuran heterogen di mana partikel terdispersi dalam medium pendispersi. Contohnya susu, santan, dan kabut.</p>", funFact: "Warna biru langit disebabkan oleh efek Tyndall, yaitu penghamburan cahaya oleh partikel koloid di atmosfer.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Susu adalah contoh sistem koloid jenis...", pilihan: ["Sol", "Emulsi", "Buih"], jawaban: "Emulsi", hint:"Cairan terdispersi dalam cairan." }] },
+                        sel_elektrokimia: { judul: "Sel Volta dan Elektrolisis", konten: "<p>Sel Volta mengubah energi kimia menjadi listrik (baterai). Sel Elektrolisis mengubah energi listrik menjadi kimia (penyepuhan logam).</p>", funFact: "Baterai lithium-ion pada ponsel Anda adalah contoh sel Volta yang bisa diisi ulang.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Proses pelapisan sendok besi dengan perak menggunakan prinsip...", pilihan: ["Sel Volta", "Elektrolisis", "Korosi"], jawaban: "Elektrolisis", hint:"Membutuhkan sumber listrik eksternal." }] },
+                        kimia_karbon: { judul: "Gugus Fungsi Kimia Karbon", konten: "<p>Senyawa karbon memiliki gugus fungsi khas yang menentukan sifatnya, seperti alkohol (-OH), aldehida (-CHO), dan asam karboksilat (-COOH).</p>", funFact: "Bau khas buah-buahan sebagian besar disebabkan oleh senyawa ester.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Asam cuka (asam asetat) memiliki gugus fungsi...", pilihan: ["Alkohol", "Keton", "Asam karboksilat"], jawaban: "Asam karboksilat", hint:"Sesuai dengan namanya." }] },
+                        makromolekul: { judul: "Polimer dan Makromolekul", konten: "<p>Makromolekul adalah molekul raksasa seperti karbohidrat, protein, dan polimer sintetik (plastik). Mereka terbentuk dari unit-unit kecil yang disebut monomer.</p>", funFact: "Kevlar, bahan rompi anti peluru, adalah polimer yang sangat kuat.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Plastik PET pada botol minuman adalah contoh dari...", pilihan: ["Karbohidrat", "Protein", "Polimer"], jawaban: "Polimer", hint:"Molekul besar buatan manusia." }] },
+                        radiokimia: { judul: "Kimia Inti & Radioaktivitas", konten: "<p>Radioaktivitas adalah peluruhan spontan inti atom yang tidak stabil, memancarkan partikel alfa, beta, atau gamma. Waktu paruh adalah ukuran kestabilannya.</p>", funFact: "Penanggalan karbon-14 digunakan oleh arkeolog untuk menentukan umur fosil.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Sinar radiasi yang memiliki daya tembus paling kuat adalah...", pilihan: ["Alfa", "Beta", "Gamma"], jawaban: "Gamma", hint:"Merupakan radiasi elektromagnetik." }] },
+                        kimia_lingkungan: { judul: "Kimia Lingkungan", konten: "<p>Mempelajari dampak zat kimia terhadap lingkungan, seperti efek rumah kaca (CO2), penipisan ozon (CFC), dan hujan asam (SOx, NOx).</p>", funFact: "Satu atom klorin dari CFC dapat menghancurkan lebih dari 100.000 molekul ozon.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Gas yang paling bertanggung jawab atas efek rumah kaca adalah...", pilihan: ["Oksigen", "Karbon dioksida", "Nitrogen"], jawaban: "Karbon dioksida", hint:"Dihasilkan dari pembakaran." }] },
+                        benzena: { judul: "Benzena dan Turunannya", konten: "<p>Benzena (C₆H₆) adalah senyawa aromatik dengan struktur cincin. Turunannya banyak digunakan, seperti fenol (antiseptik) dan anilina (pewarna).</p>", funFact: "Struktur cincin benzena yang unik pertama kali diimpikan oleh kimiawan Kekulé sebagai ular yang menggigit ekornya sendiri.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Bahan aktif pada obat aspirin adalah turunan benzena yang disebut asam asetil...", pilihan: ["Benzoat", "Salisilat", "Sulfonat"], jawaban: "Salisilat", hint:"Turunan dari fenol." }] },
+                        redoks: { judul: "Penyetaraan Reaksi Redoks", konten: "<p>Reaksi redoks melibatkan perubahan bilangan oksidasi. Penyetaraan bisa dilakukan dengan metode setengah reaksi atau metode bilangan oksidasi.</p>", funFact: "Proses perkaratan besi adalah contoh reaksi redoks yang umum.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Pada reaksi redoks, reduksi adalah peristiwa...", pilihan: ["Pelepasan elektron", "Penangkapan elektron", "Penambahan proton"], jawaban: "Penangkapan elektron", hint:"Bilangan oksidasinya turun." }] },
+                        kimia_unsur: { judul: "Kimia Unsur Golongan Utama", konten: "<p>Mempelajari sifat-sifat khas unsur-unsur di golongan IA (alkali), IIA (alkali tanah), VIIA (halogen), dan VIIIA (gas mulia).</p>", funFact: "Gas mulia seperti Neon dan Argon digunakan dalam lampu karena sifatnya yang tidak reaktif.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Unsur yang paling elektronegatif dan reaktif adalah Fluorin, yang termasuk dalam golongan...", pilihan: ["Alkali", "Gas mulia", "Halogen"], jawaban: "Halogen", hint:"Golongan VIIA, pembentuk garam." }] }
+                     } },
+                    biologi_sma: { namaDunia: "Cet
+ak Biru Kehidupan", warna: "green", icon: "🧬", deskripsi: "Mendalami genetika, evolusi, metabolisme, dan bioteknologi modern.", subMateri: {} },
+                    // Kelompok IPS
+                    sejarah_sma: { namaDunia: "Arsip Peradaban", warna: "stone", icon: "📜", deskripsi: "Analisis sejarah dunia, revolusi besar, dan sejarah kontemporer.", subMateri: {} },
+                    geografi_sma: { namaDunia: "Geosfer Planet", warna: "cyan", icon: "🌋", deskripsi: "Litosfer, hidrosfer, atmosfer, dan interaksi manusia dengan lingkungan.", subMateri: {} },
+                    ekonomi_sma: { namaDunia: "Bursa Finansial", warna: "rose", icon: "📊", deskripsi: "Akuntansi, pasar modal, kebijakan moneter, dan ekonomi internasional.", subMateri: {} },
+                    sosiologi_sma: { namaDunia: "Jaringan Sosial", warna: "pink", icon: "👥", deskripsi: "Struktur sosial, konflik, perubahan sosial, dan penelitian sosial.", subMateri: {} },
+                    // Lintas Minat & Umum
+                    b_indonesia_sma: { namaDunia: "Podium Kritik Sastra", warna: "yellow", icon: "✒️", deskripsi: "Kaji karya sastra angkatan lama dan baru, esai, dan teks editorial.", subMateri: {} },
+                    english_sma: { namaDunia: "Global Forum", warna: "teal", icon: "💼", deskripsi: "Argumentative essays, formal communication, and literature analysis.", subMateri: {} },
+                    pkn_sma: { namaDunia: "Parlemen Demokrasi", warna: "red", icon: "🏛️", deskripsi: "Hak Asasi Manusia, hubungan internasional, dan sistem hukum.", subMateri: {} },
+                    seni_budaya_sma: { namaDunia: "Pentas Ekspresi", warna: "fuchsia", icon: "🎭", deskripsi: "Kritik seni, manajemen pertunjukan, dan eksplorasi seni kontemporer.", subMateri: {} },
+                    matematika_wajib_sma: { namaDunia: "Logika Universal", warna: "orange", icon: "≅", deskripsi: "Statistika inferensial, peluang, matriks, dan program linear.", subMateri: {} },
+                    informatika_sma: { namaDunia: "Silicon Valley", warna: "indigo", icon: "💡", deskripsi: "Struktur data, pengembangan web, dan dasar-dasar AI.", subMateri: {} },
+                    prakarya_wirausaha_sma: { namaDunia: "Inkubator Bisnis", warna: "amber", icon: "🚀", deskripsi: "Business plan, marketing digital, dan rekayasa produk inovatif.", subMateri: {} },
+                    pjok_sma: { namaDunia: "Arena Atletik", warna: "lime", icon: "🤸", deskripsi: "Analisis strategi permainan, cedera olahraga, dan kesehatan.", subMateri: {} },
+                    b_asing_sma: { namaDunia: "Kedutaan Bahasa", warna: "slate", icon: "🈴", deskripsi: "Jerman, Mandarin, Jepang, atau Prancis. Pilih bahasamu!", subMateri: {} },
+                    antropologi_sma: { namaDunia: "Ekspedisi Budaya", warna: "violet", icon: "🗿", deskripsi: "Mempelajari keragaman budaya manusia dan evolusi sosial.", subMateri: {} },
+                    filsafat_sma: { namaDunia: "Agora Pemikiran", warna: "blue", icon: "🧠", deskripsi: "Pengantar logika, etika, dan pemikiran filsuf besar.", subMateri: {} },
+                }
+            },
+            kuliah: {
+                dunia: {
+                    metodologi_penelitian: { namaDunia: "Ekspedisi Riset", warna: "slate", icon: "🔬", deskripsi: "Dari hipotesis hingga publikasi. Kuasai metode penelitian.", subMateri: {} },
+                    dasar_pemrograman: { namaDunia: "Galaksi Informatika", warna: "indigo", icon: "💻", deskripsi: "Algoritma, struktur data, dan paradigma pemrograman.", subMateri: {
+                        algoritma_pseudocode: { judul: "Algoritma & Pseudocode", konten: "<p>Algoritma adalah urutan langkah logis untuk menyelesaikan masalah. Pseudocode adalah cara menuliskannya dalam format yang mirip bahasa manusia sebelum diimplementasikan dalam kode.</p>", funFact: "Kata 'algoritma' berasal dari nama matematikawan Persia, Al-Khwarizmi.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Tujuan utama dari pseudocode adalah...", pilihan: ["Untuk dieksekusi oleh komputer", "Merencanakan logika program", "Membuat program lebih cepat"], jawaban: "Merencanakan logika program", hint:"Sebagai cetak biru sebelum coding." }] },
+                        tipe_data_variabel: { judul: "Tipe Data & Variabel", konten: "<p>Variabel adalah 'wadah' untuk menyimpan data. Setiap variabel memiliki tipe data, seperti integer (bilangan bulat), float (pecahan), string (teks), dan boolean (true/false).</p>", funFact: "Beberapa bahasa pemrograman bersifat 'statically typed' (tipe data harus dideklarasikan), sementara yang lain 'dynamically typed' (tipe data ditentukan saat runtime).", kuis: [{ type: "pilihan-ganda", pertanyaan: "Tipe data yang paling cocok untuk menyimpan nama seseorang adalah...", pilihan: ["Integer", "Boolean", "String"], jawaban: "String", hint:"Untuk menyimpan kumpulan karakter/teks." }] },
+                        operator: { judul: "Operator Dasar", konten: "<p>Operator digunakan untuk melakukan operasi, seperti aritmatika (+, -, *), perbandingan (==, >, <), dan logika (AND, OR, NOT).</p>", funFact: "Operator 'modulo' (%) memberikan sisa dari sebuah pembagian, sangat berguna untuk menentukan bilangan genap/ganjil.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Hasil dari ekspresi `5 > 3 AND 2 < 1` adalah...", pilihan: ["True", "False", "Error"], jawaban: "False", hint:"Kedua kondisi harus True agar hasilnya True." }] },
+                        percabangan: { judul: "Struktur Kondisional (If-Else)", konten: "<p>Percabangan (if, else if, else) memungkinkan program untuk mengambil keputusan dan menjalankan blok kode yang berbeda berdasarkan kondisi tertentu.</p>", funFact: "Struktur `switch-case` adalah bentuk lain dari percabangan yang lebih efisien untuk banyak kondisi pada satu variabel.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Jika `x = 10`, blok kode mana yang akan dieksekusi pada `if (x > 10) {..} else {..}`?", pilihan: ["Blok if", "Blok else", "Keduanya"], jawaban: "Blok else", hint:"Karena 10 tidak lebih besar dari 10." }] },
+                        perulangan: { judul: "Struktur Perulangan (Loop)", konten: "<p>Loop (for, while, do-while) digunakan untuk menjalankan blok kode berulang kali. `For loop` untuk iterasi yang terhitung, `while loop` untuk iterasi berbasis kondisi.</p>", funFact: "`Loop` tak terbatas (infinite loop) adalah salah satu bug yang paling umum dan bisa membuat program 'hang'.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Loop yang pasti akan menjalankan kodenya setidaknya satu kali adalah...", pilihan: ["For loop", "While loop", "Do-while loop"], jawaban: "Do-while loop", hint:"Kondisi diperiksa di akhir." }] },
+                        array: { judul: "Array / List", konten: "<p>Array adalah struktur data yang menyimpan kumpulan elemen dengan tipe data yang sama dalam urutan tertentu. Elemen diakses menggunakan indeks yang dimulai dari 0.</p>", funFact: "Array dua dimensi dapat digunakan untuk merepresentasikan matriks atau papan permainan seperti catur.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Pada array `[10, 20, 30]`, elemen dengan indeks 1 adalah...", pilihan: ["10", "20", "30"], jawaban: "20", hint:"Indeks dimulai dari nol." }] },
+                        fungsi_prosedur: { judul: "Fungsi dan Prosedur", konten: "<p>Fungsi adalah blok kode yang dapat digunakan kembali yang menerima input (parameter) dan mengembalikan output. Prosedur mirip, tetapi biasanya tidak mengembalikan nilai.</p>", funFact: "Penggunaan fungsi membuat kode lebih modular, lebih mudah dibaca, dan mengurangi redundansi (prinsip DRY: Don't Repeat Yourself).", kuis: [{ type: "pilihan-ganda", pertanyaan: "Tujuan utama membuat fungsi adalah...", pilihan: ["Membuat program lebih panjang", "Menggunakan kembali kode", "Membuat variabel"], jawaban: "Menggunakan kembali kode", hint:"Untuk efisiensi dan kerapian." }] },
+                        oop_dasar: { judul: "Konsep Dasar OOP", konten: "<p>Object-Oriented Programming (OOP) berpusat pada 'objek' yang memiliki data (atribut) dan perilaku (metode). Konsep utamanya adalah enkapsulasi, pewarisan, dan polimorfisme.</p>", funFact: "Simula adalah bahasa pemrograman pertama yang memperkenalkan konsep OOP pada tahun 1960-an.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Mekanisme di mana sebuah class 'anak' mewarisi atribut dan metode dari class 'induk' disebut...", pilihan: ["Enkapsulasi", "Polimorfisme", "Pewarisan (Inheritance)"], jawaban: "Pewarisan (Inheritance)", hint:"Sesuai dengan namanya, 'mewarisi'." }] },
+                        struktur_data_dasar: { judul: "Struktur Data Dasar", konten: "<p>Selain array, ada struktur data lain seperti Stack (tumpukan, LIFO), Queue (antrian, FIFO), dan Linked List (daftar tertaut).</p>", funFact: "Tombol 'Undo' (Ctrl+Z) pada banyak aplikasi diimplementasikan menggunakan struktur data Stack.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Struktur data yang menerapkan prinsip 'First-In, First-Out' (FIFO) adalah...", pilihan: ["Stack", "Queue", "Array"], jawaban: "Queue", hint:"Seperti antrian di loket." }] },
+                        algoritma_sorting: { judul: "Algoritma Pengurutan", konten: "<p>Algoritma sorting (seperti Bubble Sort, Selection Sort, Merge Sort) digunakan untuk mengatur elemen dalam sebuah daftar sesuai urutan tertentu (misalnya, dari kecil ke besar).</p>", funFact: "Bubble Sort mudah dipahami tetapi sangat tidak efisien untuk data dalam jumlah besar.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Mengurutkan data adalah fungsi utama dari algoritma...", pilihan: ["Searching", "Sorting", "Hashing"], jawaban: "Sorting", hint:"Untuk membuat data teratur." }] },
+                        algoritma_searching: { judul: "Algoritma Pencarian", konten: "<p>Algoritma searching (seperti Linear Search dan Binary Search) digunakan untuk menemukan elemen tertentu dalam kumpulan data. Binary search jauh lebih cepat tetapi memerlukan data yang sudah terurut.</p>", funFact: "Mencari nama di buku telepon adalah analogi dunia nyata dari Binary Search.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Algoritma pencarian yang paling efisien pada data terurut adalah...", pilihan: ["Linear Search", "Binary Search", "Random Search"], jawaban: "Binary Search", hint:"Memotong setengah data di setiap langkah." }] },
+                        kompleksitas_algoritma: { judul: "Kompleksitas Algoritma", konten: "<p>Kompleksitas waktu dan ruang (Big O Notation) digunakan untuk menganalisis efisiensi sebuah algoritma. O(n) berarti waktu eksekusi tumbuh secara linear dengan ukuran input.</p>", funFact: "Algoritma dengan kompleksitas O(log n) dianggap sangat efisien karena waktunya hampir tidak bertambah meskipun datanya sangat besar.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Notasi Big O digunakan untuk mengukur...", pilihan: ["Keindahan kode", "Efisiensi algoritma", "Jumlah baris kode"], jawaban: "Efisiensi algoritma", hint:"Menilai seberapa 'cepat' algoritma berjalan." }] },
+                        rekursi: { judul: "Fungsi Rekursif", konten: "<p>Fungsi rekursif adalah fungsi yang memanggil dirinya sendiri. Setiap fungsi rekursif harus memiliki 'base case' untuk berhenti agar tidak terjadi infinite loop.</p>", funFact: "Perhitungan faktorial dan deret Fibonacci adalah contoh klasik masalah yang dapat diselesaikan secara elegan dengan rekursi.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Kondisi yang menghentikan pemanggilan diri pada fungsi rekursif disebut...", pilihan: ["End case", "Base case", "Stop condition"], jawaban: "Base case", hint:"Dasar untuk berhenti." }] },
+                        debugging: { judul: "Teknik Debugging", konten: "<p>Debugging adalah proses menemukan dan memperbaiki kesalahan (bug) dalam program. Teknik umum termasuk menggunakan 'print statements', debugger, dan membaca pesan error dengan teliti.</p>", funFact: "Istilah 'bug' komputer pertama kali tercatat ketika seekor ngengat (bug) sungguhan tersangkut di dalam komputer relay Mark II.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Proses mencari dan memperbaiki error dalam kode disebut...", pilihan: ["Compiling", "Running", "Debugging"], jawaban: "Debugging", hint:"Menghilangkan 'kutu'." }] },
+                        git_version_control: { judul: "Version Control (Git)", konten: "<p>Git adalah sistem kontrol versi yang melacak perubahan pada file dari waktu ke waktu. Ini memungkinkan kolaborasi tim dan kemampuan untuk kembali ke versi sebelumnya.</p>", funFact: "Git diciptakan oleh Linus Torvalds, orang yang sama yang menciptakan kernel sistem operasi Linux.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Perintah Git untuk menyimpan perubahan ke repositori lokal adalah...", pilihan: ["git push", "git commit", "git pull"], jawaban: "git commit", hint:"Untuk 'mengikat' perubahan." }] },
+                        file_io: { judul: "Input/Output File", konten: "<p>Program dapat membaca data dari file (input) dan menulis data ke file (output). Ini penting untuk menyimpan data secara permanen (persistent storage).</p>", funFact: "File CSV (Comma-Separated Values) adalah format teks sederhana yang sangat populer untuk pertukaran data tabular.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Untuk membuat data program tetap tersimpan bahkan setelah program ditutup, kita menggunakan...", pilihan: ["Variabel", "Array", "File I/O"], jawaban: "File I/O", hint:"Menyimpannya ke disk." }] },
+                        api_dasar: { judul: "Pengenalan API", konten: "<p>API (Application Programming Interface) adalah seperangkat aturan yang memungkinkan satu aplikasi 'berbicara' dengan aplikasi lain. REST API yang menggunakan HTTP adalah jenis yang sangat umum.</p>", funFact: "Setiap kali Anda menggunakan aplikasi cuaca di ponsel Anda, kemungkinan besar aplikasi itu mengambil data dari server melalui API.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Singkatan dari API adalah Application Programming...", pilihan: ["Interface", "Interaction", "Instruction"], jawaban: "Interface", hint:"Artinya antarmuka." }] },
+                        error_handling: { judul: "Error Handling (Try-Catch)", konten: "<p>Error handling (seperti blok try-catch) digunakan untuk mengelola kesalahan yang mungkin terjadi saat program berjalan (runtime errors) agar program tidak 'crash'.</p>", funFact: "Kesalahan 'Null Pointer Exception' adalah salah satu bug yang paling sering terjadi dan mahal dalam sejarah komputasi.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Blok kode yang digunakan untuk 'menangkap' error saat runtime adalah...", pilihan: ["Blok if", "Blok try", "Blok catch"], jawaban: "Blok catch", hint:"Untuk menangkap sesuatu yang salah." }] },
+                        paradigma_pemrograman: { judul: "Paradigma Pemrograman", konten: "<p>Selain Prosedural dan OOP, ada paradigma lain seperti Fungsional (menganggap komputasi sebagai evaluasi fungsi matematika) dan Logika (berbasis logika formal).</p>", funFact: "Bahasa seperti Haskell dan Lisp adalah contoh utama dari paradigma pemrograman fungsional.", kuis: [{ type: "pilihan-ganda", pertanyaan: "OOP, Prosedural, dan Fungsional adalah contoh dari...", pilihan: ["Bahasa pemrograman", "Paradigma pemrograman", "Sistem operasi"], jawaban: "Paradigma pemrograman", hint:"Gaya atau cara berpikir tentang pemrograman." }] },
+                        hello_world: { judul: "Praktik: 'Hello, World!'", konten: "<p>Menulis program 'Hello, World!' adalah tradisi untuk memulai belajar bahasa pemrograman baru. Ini adalah tes sederhana untuk memastikan lingkungan pengembangan Anda berfungsi dengan benar.</p>", funFact: "Tradisi 'Hello, World!' dipopulerkan oleh buku tentang bahasa pemrograman C oleh Brian Kernighan dan Dennis Ritchie.", kuis: [{ type: "pilihan-ganda", pertanyaan: "Tujuan utama program 'Hello, World!' adalah...", pilihan: ["Membuat program yang kompleks", "Menguji setup lingkungan pemrograman", "Menghitung angka"], jawaban: "Menguji setup lingkungan pemrograman", hint:"Langkah pertama yang paling dasar." }] }
+                     } },
+                    kalkulus_dasar: { namaDunia: "Puncak Analisis", warna: "blue", icon: "ƒ", deskripsi: "Menguasai limit, turunan, dan integral untuk memodelkan perubahan.", subMateri: {} },
+                    pengantar_ekonomi: { namaDunia: "Pasar Global", warna: "rose", icon: "💹", deskripsi: "Prinsip mikroekonomi, makroekonomi, dan ekonomi pembangunan.", subMateri: {} },
+                    hukum_pengantar: { namaDunia: "Forum Justitia", warna: "stone", icon: "🏛️", deskripsi: "Pengantar Ilmu Hukum, Hukum Pidana, Perdata, dan Tata Negara.", subMateri: {} },
+                    dasar_akuntansi: { namaDunia: "Neraca Keuangan", warna: "green", icon: "🧾", deskripsi: "Debit, kredit, jurnal, buku besar, dan laporan keuangan.", subMateri: {} },
+                    biologi_dasar: { namaDunia: "Molekul Kehidupan", warna: "lime", icon: "🦠", deskripsi: "Biokimia, biologi sel, dan genetika molekuler.", subMateri: {} },
+                    kimia_dasar: { namaDunia: "Reaktor Kimia", warna: "purple", icon: "⚗️", deskripsi: "Kimia anorganik, organik, dan fisika tingkat lanjut.", subMateri: {} },
+                    fisika_dasar: { namaDunia: "Laboratorium Mekanika", warna: "red", icon: "🌌", deskripsi: "Mekanika, termodinamika, dan elektromagnetisme.", subMateri: {} },
+                    ilmu_politik_dasar: { namaDunia: "Arena Politik", warna: "orange", icon: "🗳️", deskripsi: "Teori politik, sistem pemilu, dan hubungan internasional.", subMateri: {} },
+                    psikologi_umum: { namaDunia: "Labirin Pikiran", warna: "pink", icon: "🧠", deskripsi: "Psikologi kognitif, sosial, perkembangan, dan klinis.", subMateri: {} },
+                    sastra_pengantar: { namaDunia: "Perpustakaan Dunia", warna: "yellow", icon: "📚", deskripsi: "Analisis prosa, puisi, dan drama dari berbagai periode.", subMateri: {} },
+                    dasar_manajemen: { namaDunia: "Kantor Strategis", warna: "teal", icon: "📈", deskripsi: "Fungsi manajemen (POAC), SDM, pemasaran, dan operasional.", subMateri: {} },
+                    kewirausahaan: { namaDunia: "Lembah Startup", warna: "amber", icon: "💡", deskripsi: "Model bisnis kanvas, validasi ide, dan strategi pendanaan.", subMateri: {} },
+                    public_speaking: { namaDunia: "Panggung Inspirasi", warna: "fuchsia", icon: "🎤", deskripsi: "Teknik presentasi, retorika, dan komunikasi persuasif.", subMateri: {} },
+                    statistik_sosial: { namaDunia: "Survei Opini", warna: "cyan", icon: "📊", deskripsi: "Statistika deskriptif, inferensial, dan analisis data kuantitatif.", subMateri: {} },
+                    desain_grafis_dasar: { namaDunia: "Studio Visual", warna: "violet", icon: "🎨", deskripsi: "Prinsip desain, tipografi, teori warna, dan software desain.", subMateri: {} },
+                    kedokteran_dasar: { namaDunia: "Klinik Anatomi", warna: "blue", icon: "🩺", deskripsi: "Anatomi, fisiologi, dan patologi dasar tubuh manusia.", subMateri: {} },
+                    teknik_sipil_dasar: { namaDunia: "Proyek Konstruksi", warna: "orange", icon: "🏗️", deskripsi: "Mekanika teknik, struktur bangunan, dan ilmu bahan.", subMateri: {} },
+                    filsafat_ilmu: { namaDunia: "Podium Pengetahuan", warna: "stone", icon: "🦉", deskripsi: "Ontologi, epistemologi, dan aksiologi dalam ilmu pengetahuan.", subMateri: {} },
+                }
+            }
+        };
+        
+        // CATATAN: Database di atas telah diperluas secara signifikan.
+        // Struktur untuk 20 dunia di setiap jenjang (SD, SMP, SMA, Kuliah) telah dibuat.
+        // Beberapa dunia di setiap jenjang telah diisi penuh dengan 20 submateri unik untuk menunjukkan kedalaman konten.
+        // Dunia lainnya masih berupa kerangka (`subMateri: {}`) yang siap untuk diisi di pengembangan selanjutnya.
+
+        
+        function generateBadges() {
+            for (const jenjang in edukasiData) {
+                const jenjangData = edukasiData[jenjang];
+                if (!jenjangData.badges) jenjangData.badges = {};
+                for (const duniaId in jenjangData.dunia) {
+                    const dunia = jenjangData.dunia[duniaId];
+                    jenjangData.badges[duniaId] = {
+                        id: duniaId,
+                        title: `Pakar ${dunia.namaDunia}`,
+                        description: `Menyelesaikan semua materi di ${dunia.namaDunia}.`,
+                        icon: dunia.icon
+                    };
+                }
+                const jenjangTitle = { sd: "SD", smp: "SMP", sma: "SMA", kuliah: "Kuliah" }[jenjang];
+                jenjangData.badges['cendekia'] = {
+                    id: 'cendekia',
+                    title: `Cendekia ${jenjangTitle}`,
+                    description: `Menyelesaikan 100% materi di jenjang ${jenjangTitle}!`,
+                    icon: '🎓'
+                };
+            }
+        }
+        generateBadges();
+
+
+        // --- Variabel & State Aplikasi ---
+        const domElements = { 
+            screens: document.querySelectorAll('.screen'), 
+            modals: document.querySelectorAll('.modal-overlay'),
+            loadingScreen: document.getElementById('loading-screen'),
+            userListContainer: document.getElementById('user-list-container'), 
+            addNewUserBtn: document.getElementById('add-new-user-btn'), 
+            playerNameInput: document.getElementById('player-name-input'), 
+            avatarSelectionContainer: document.getElementById('avatar-selection-container'),
+            nextToLevelBtn: document.getElementById('next-to-level-btn'), 
+            cancelNewUserBtn: document.getElementById('cancel-new-user-btn'), 
+            jenjangPromptName: document.getElementById('jenjang-prompt-name'), 
+            welcomeMessage: document.getElementById('welcome-message'), 
+            pointsDisplay: document.getElementById('points-display'), 
+            userAvatarHeader: document.getElementById('user-avatar-header'), 
+            duniaContainer: document.getElementById('dunia-container'), 
+            submateriContainer: document.getElementById('submateri-container'), 
+            submateriTitle: document.getElementById('submateri-title'), 
+            materiContent: document.getElementById('materi-content'), 
+            backToWorldsBtn: document.getElementById('back-to-worlds-btn'), 
+            backToSubmateriBtn: document.getElementById('back-to-submateri-btn'), 
+            settingsBtn: document.getElementById('settings-btn'), 
+            achievementsBtn: document.getElementById('achievements-btn'), 
+            closeSettingsBtn: document.getElementById('close-settings-btn'), 
+            editNameInput: document.getElementById('edit-name-input'), 
+            saveNameBtn: document.getElementById('save-name-btn'), 
+            changeJenjangSelect: document.getElementById('change-jenjang-select'),
+            soundToggleBtn: document.getElementById('sound-toggle'),
+            themeSelector: document.getElementById('theme-selector'),
+            resetProgressBtn: document.getElementById('reset-progress-btn'), 
+            resetUsernameConfirm: document.getElementById('reset-username-confirm'), 
+            cancelResetBtn: document.getElementById('cancel-reset-btn'), 
+            confirmResetBtn: document.getElementById('confirm-reset-btn'), 
+            funFactText: document.getElementById('fun-fact-text'), 
+            closeFunFactBtn: document.getElementById('close-fun-fact-btn'), 
+            achievementsList: document.getElementById('achievements-list'), 
+            closeAchievementsBtn: document.getElementById('close-achievements-btn'), 
+            certificateName: document.getElementById('certificate-name'), 
+            closeCertificateBtn: document.getElementById('close-certificate-btn'),
+            leaderboardBtn: document.getElementById('leaderboard-btn'),
+            leaderboardList: document.getElementById('leaderboard-list'),
+            closeLeaderboardBtn: document.getElementById('close-leaderboard-btn'),
+            dailyMissionBtn: document.getElementById('daily-mission-btn'),
+            dailyMissionText: document.getElementById('daily-mission-text'),
+            missionProgressBar: document.getElementById('mission-progress-bar'),
+            claimMissionRewardBtn: document.getElementById('claim-mission-reward-btn'),
+            closeDailyMissionBtn: document.getElementById('close-daily-mission-btn'),
+            closeDailyBonusBtn: document.getElementById('close-daily-bonus-btn'),
+            avatarShopContainer: document.getElementById('avatar-shop-container'),
+            closeAvatarShopBtn: document.getElementById('close-avatar-shop-btn'),
+            shopPointsDisplay: document.getElementById('shop-points-display'),
+            pointAnimationContainer: document.getElementById('point-animation-container'),
+            streakDisplay: document.getElementById('streak-display'),
+            dailyBonusAmount: document.getElementById('daily-bonus-amount'),
+            dailyStreakBonusText: document.getElementById('daily-streak-bonus-text'),
+            shareProgressBtn: document.getElementById('share-progress-btn'),
+            mascotTipContainer: document.getElementById('mascot-tip-container'),
+            musicToggleBtn: document.getElementById('music-toggle'),
+            backgroundMusic: document.getElementById('background-music'),
+            searchBar: document.getElementById('search-bar'),
+            wordOfTheDay: document.getElementById('word-of-the-day'),
+            reviewModeBtn: document.getElementById('review-mode-btn'),
+            timedChallengeBtn: document.getElementById('timed-challenge-btn'),
+            timedChallengeModal: document.getElementById('timed-challenge-modal'),
+            challengeTimer: document.getElementById('challenge-timer'),
+            challengeQuestionArea: document.getElementById('challenge-question-area'),
+            challengeFeedback: document.getElementById('challenge-feedback'),
+            closeTimedChallengeBtn: document.getElementById('close-timed-challenge-btn'),
+            statsModal: document.getElementById('stats-modal'),
+            statsUsername: document.getElementById('stats-username'),
+            statsContent: document.getElementById('stats-content'),
+            closeStatsBtn: document.getElementById('close-stats-btn'),
+            userTitleDisplay: document.getElementById('user-title-display'),
+            genericShopTitle: document.getElementById('generic-shop-title'),
+            genericShopContainer: document.getElementById('generic-shop-container'),
+            genericShopPoints: document.getElementById('generic-shop-points'),
+            eventBannerContainer: document.getElementById('event-banner-container'),
+            shareCertificateBtn: document.getElementById('share-certificate-btn'),
+            progressTreeToggle: document.getElementById('progress-tree-toggle'),
+        };
+
+        let userProfiles = [], currentUserIndex = -1, activeUser = null, currentDuniaId = null, currentSubmateriId = null, selectedAvatarId = null, timedChallengeInterval = null;
+        let dailyBonusWorldId = null;
+        let viewedUser = null;
+        const sounds = { 
+            click: new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.01, decay: 0.2, sustain: 0, release: 0.1 } }).toDestination(), 
+            correct: new Tone.Synth({ oscillator: { type: "triangle" }, envelope: { attack: 0.01, decay: 0.3, sustain: 0.1, release: 0.2 } }).toDestination(), 
+            wrong: new Tone.Synth({ oscillator: { type: "square" }, envelope: { attack: 0.01, decay: 0.5, sustain: 0, release: 0.2 } }).toDestination(), 
+            badge: new Tone.Synth({ oscillator: { type: "sawtooth" }, envelope: { attack: 0.1, decay: 0.5, sustain: 0.2, release: 0.5 } }).toDestination(),
+            open: new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.01, decay: 0.1, sustain: 0, release: 0.1 } }).toDestination(),
+            purchase: new Tone.Synth({ oscillator: { type: "triangle8" }, envelope: { attack: 0.01, decay: 0.4, sustain: 0.1, release: 0.2 } }).toDestination(),
+            equip: new Tone.Synth({ oscillator: { type: "sine" }, envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 0.1 } }).toDestination(),
+        };
+        const colorMapping = { green: { bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-400', progress: 'bg-green-500' }, emerald: { bg: 'bg-emerald-100', text: 'text-emerald-800', border: 'border-emerald-400', progress: 'bg-emerald-500' }, yellow: { bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-400', progress: 'bg-yellow-500' }, amber: { bg: 'bg-amber-100', text: 'text-amber-800', border: 'border-amber-400', progress: 'bg-amber-500' }, blue: { bg: 'bg-blue-100', text: 'text-blue-800', border: 'border-blue-400', progress: 'bg-blue-500' }, purple: { bg: 'bg-purple-100', text: 'text-purple-800', border: 'border-purple-400', progress: 'bg-purple-500' }, violet: { bg: 'bg-violet-100', text: 'text-violet-800', border: 'border-violet-400', progress: 'bg-violet-500' }, red: { bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-400', progress: 'bg-red-500' }, teal: { bg: 'bg-teal-100', text: 'text-teal-800', border: 'border-teal-400', progress: 'bg-teal-500' }, pink: { bg: 'bg-pink-100', text: 'text-pink-800', border: 'border-pink-400', progress: 'bg-pink-500' }, rose: { bg: 'bg-rose-100', text: 'text-rose-800', border: 'border-rose-400', progress: 'bg-rose-500' }, lime: { bg: 'bg-lime-100', text: 'text-lime-800', border: 'border-lime-400', progress: 'bg-lime-500' }, orange: { bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-400', progress: 'bg-orange-500' }, cyan: { bg: 'bg-cyan-100', text: 'text-cyan-800', border: 'border-cyan-400', progress: 'bg-cyan-500' }, indigo: { bg: 'bg-indigo-100', text: 'text-indigo-800', border: 'border-indigo-400', progress: 'bg-indigo-500' }, slate: { bg: 'bg-slate-100', text: 'text-slate-800', border: 'border-slate-400', progress: 'bg-slate-500' }, fuchsia: { bg: 'bg-fuchsia-100', text: 'text-fuchsia-800', border: 'border-fuchsia-400', progress: 'bg-fuchsia-500' }, stone: { bg: 'bg-stone-100', text: 'text-stone-800', border: 'border-stone-400', progress: 'bg-stone-500' }};
+
+        // --- Fungsi-fungsi Aplikasi ---
+
+        function createNewUser(name, avatarId) {
+            const starterAvatars = Object.keys(avatarData).filter(id => avatarData[id].isStarter);
+            const u = {
+                id: Date.now(),
+                name: name,
+                avatarId: avatarId,
+                jenjang: null,
+                points: 0,
+                progress: {},
+                badges: {},
+                dailyMission: {},
+                lastLogin: null,
+                loginStreak: 0,
+                studyStreak: 0,
+                lastStudyDate: null,
+                unlockedAvatars: starterAvatars,
+                stats: { correctAnswers: 0, wrongAnswers: 0, quizzesCompleted: 0, proQuizzesCompleted: 0 },
+                settings: { soundOn: true, theme: 'light', musicOn: false, fontSize: 'normal', zenMode: false, soundPack: 'default' },
+                title: "Petualang Baru",
+                unlockedTitles: ["Petualang Baru"],
+                achievementProgress: {},
+                inventory: {},
+                favorites: [],
+                notes: {},
+                equippedMascot: [],
+            };
+            userProfiles.push(u);
+            currentUserIndex = userProfiles.length - 1;
+            activeUser = u;
+            saveData();
+            domElements.jenjangPromptName.textContent = `Hai ${activeUser.name}, ayo pilih jenjangmu!`;
+            switchScreen('jenjang-screen');
+        }
+
+        function checkDailyLogin() {
+            const today = new Date();
+            const todayStr = today.toDateString();
+            if (activeUser.lastLogin === todayStr) return;
+
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            
+            if (activeUser.lastLogin === yesterday.toDateString()) {
+                activeUser.loginStreak++;
+            } else if (activeUser.lastLogin !== null) {
+                activeUser.loginStreak = 1;
+                 showMascotTip(`Semangat kembali, ${activeUser.name}! Lanjutkan petualanganmu setiap hari untuk bonus lebih besar!`);
+            } else {
+                 activeUser.loginStreak = 1;
+            }
+            
+            const baseBonus = 50;
+            const streakBonus = activeUser.loginStreak * 10;
+            const totalBonus = baseBonus + streakBonus;
+
+            activeUser.lastLogin = todayStr;
+            addPoints(totalBonus, null, false);
+            
+            domElements.dailyBonusAmount.textContent = `${totalBonus} Poin`;
+            if (activeUser.loginStreak > 1) {
+                domElements.dailyStreakBonusText.textContent = `Bonus beruntun ${activeUser.loginStreak} hari: +${streakBonus} poin!`;
+            } else {
+                domElements.dailyStreakBonusText.textContent = "Selesaikan misimu dan kembali besok untuk bonus lebih besar!";
+            }
+
+            saveData();
+            updateUI();
+            showModal('daily-bonus-modal');
+        }
+
+        function updateUI() {
+            if (!activeUser) return;
+            document.body.classList.toggle('zen-mode', activeUser.settings.zenMode);
+            domElements.welcomeMessage.textContent = `Halo, ${activeUser.name}!`;
+            domElements.userTitleDisplay.textContent = activeUser.title;
+            domElements.userAvatarHeader.innerHTML = avatarData[activeUser.avatarId].svg;
+            domElements.streakDisplay.innerHTML = activeUser.loginStreak > 1 ? `🔥 ${activeUser.loginStreak}` : '';
+            domElements.pointsDisplay.textContent = `💰 Poin: ${activeUser.points}`;
+            setWordOfTheDay();
+            checkGlobalEvents();
+        }
+        
+        function showPointAnimation(text) {
+            const animEl = document.createElement('div');
+            animEl.className = 'point-animation';
+            animEl.textContent = text;
+            domElements.pointAnimationContainer.appendChild(animEl);
+            setTimeout(() => {
+                animEl.remove();
+            }, 1500);
+        }
+
+        function addPoints(amount, duniaId = null, withAnimation = true) {
+            if (!activeUser) return;
+            let finalAmount = amount;
+            
+            const activeEvent = getActiveEvent();
+            if (activeEvent && activeEvent.dunia.includes(duniaId)) {
+                finalAmount *= activeEvent.multiplier;
+            }
+
+            if (duniaId && duniaId === dailyBonusWorldId && amount > 0) {
+                finalAmount = Math.ceil(finalAmount * 1.25); // Bonus 25%
+            }
+            activeUser.points += Math.round(finalAmount);
+            if(withAnimation && finalAmount > 0) showPointAnimation(`+${Math.round(finalAmount)}`);
+            saveData();
+            updateUI();
+        }
+
+        function renderAvatarShop() {
+            domElements.shopPointsDisplay.textContent = `💰 Poin Anda: ${activeUser.points}`;
+            domElements.avatarShopContainer.innerHTML = '';
+            Object.keys(avatarData).forEach(avatarId => {
+                const avatar = avatarData[avatarId];
+                const isOwned = activeUser.unlockedAvatars.includes(avatarId);
+                const isEquipped = activeUser.avatarId === avatarId;
+                
+                const item = document.createElement('div');
+                item.className = 'shop-item p-4 flex flex-col items-center justify-center';
+                if (isOwned) item.classList.add('owned');
+                if (isEquipped) item.classList.add('equipped');
+
+                item.innerHTML = avatar.svg;
+
+                if (!isOwned) {
+                    item.classList.add('locked');
+                    item.innerHTML += `<div class="price-tag">💰 ${avatar.price}</div>`;
+                }
+                
+                item.addEventListener('click', () => {
+                    if (isOwned) {
+                        playSound('equip');
+                        activeUser.avatarId = avatarId;
+                        saveData();
+                        updateUI();
+                        renderAvatarShop();
+                    } else {
+                        if (activeUser.points >= avatar.price) {
+                            playSound('purchase');
+                            addPoints(-avatar.price, null, false);
+                            activeUser.unlockedAvatars.push(avatarId);
+                            saveData();
+                            updateUI();
+                            renderAvatarShop();
+                        } else {
+                            playSound('wrong');
+                            showMascotTip("Duh, poinmu belum cukup untuk membeli avatar ini. Ayo selesaikan lebih banyak kuis!");
+                        }
+                    }
+                });
+                domElements.avatarShopContainer.appendChild(item);
+            });
+        }
+        
+        function handleQuizAnswer(element, answer, duniaId, submateriId, type, hintUsed) {
+            const feedbackEl = document.getElementById('quiz-feedback');
+            const isCompleted = activeUser.progress[activeUser.jenjang]?.[duniaId]?.[submateriId];
+
+            let userAnswer;
+            if (type === 'isi-jawaban') {
+                userAnswer = element.value.trim();
+            } else {
+                userAnswer = element.textContent.trim();
+            }
+
+            const isCorrect = userAnswer.toLowerCase() === answer.toLowerCase();
+
+            if (isCorrect) {
+                playSound('correct');
+                feedbackEl.textContent = 'Jawaban Benar! Kamu Hebat!';
+                feedbackEl.className = 'mt-4 text-lg font-bold text-green-600';
+                activeUser.stats.correctAnswers++;
+                
+                const todayStr = new Date().toDateString();
+                if(activeUser.lastStudyDate !== todayStr) {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    if(activeUser.lastStudyDate === yesterday.toDateString()){
+                        activeUser.studyStreak++;
+                    } else {
+                        activeUser.studyStreak = 1;
+                    }
+                    activeUser.lastStudyDate = todayStr;
+                    if(activeUser.studyStreak > 1) showMascotTip(`Runtutan belajar ${activeUser.studyStreak} hari! Keren!`);
+                }
+
+
+                if (!isCompleted) {
+                    const pointsEarned = hintUsed ? 5 : 10;
+                    addPoints(pointsEarned, duniaId);
+                    activeUser.progress[activeUser.jenjang][duniaId][submateriId] = { done: true };
+                    activeUser.stats.quizzesCompleted++;
+                    updateDailyMissionProgress('quiz_completed', duniaId);
+                    updateDailyMissionProgress('correct_answer');
+                    checkAndAwardBadges();
+                    saveData();
+                }
+
+                setTimeout(() => {
+                    const materi = edukasiData[activeUser.jenjang].dunia[duniaId].subMateri[submateriId];
+                    if (materi.funFact) {
+                        document.getElementById('mascot-container').innerHTML = mascotSVG;
+                        domElements.funFactText.textContent = materi.funFact;
+                        showModal('fun-fact-modal');
+                    } else {
+                        renderSubMateri(duniaId);
+                        switchScreen('submateri-screen');
+                    }
+                }, 1000);
+
+            } else {
+                playSound('wrong');
+                activeUser.stats.wrongAnswers++;
+                feedbackEl.textContent = 'Jawaban kurang tepat, coba lagi!';
+                feedbackEl.className = 'mt-4 text-lg font-bold text-red-600';
+                if (element.classList) {
+                    element.classList.add('animate-shake');
+                    setTimeout(() => element.classList.remove('animate-shake'), 500);
+                }
+                
+                setTimeout(() => {
+                    feedbackEl.textContent = `Jawaban yang benar adalah: ${answer}`;
+                    domElements.materiContent.querySelectorAll('.quiz-option').forEach(btn => {
+                        if (btn.textContent.trim().toLowerCase() === answer.toLowerCase()) {
+                             btn.classList.add('bg-green-200', 'border-green-500');
+                        }
+                    });
+                }, 1500);
+            }
+
+            domElements.materiContent.querySelectorAll('.quiz-option, #quiz-submit-btn, .hint-button').forEach(btn => btn.disabled = true);
+        }
+        
+        function initializeApp() {
+            setTimeout(() => {
+                if (loadData()) { renderUserSelectionScreen(); } else { switchScreen('user-selection-screen'); setupNewUserScreen(); showMascotTip("Selamat datang di Petualangan Pengetahuan! Buat profil barumu untuk memulai."); }
+            }, 500);
+        }
+
+        // --- Inisialisasi & Fungsi Helper ---
+        function playSound(type) { if(!activeUser?.settings?.soundOn) return; Tone.start().catch(e=>console.log("Tone.js not started.")); try { if (type === 'correct') sounds.correct.triggerAttackRelease("C5", "8n"); else if (type === 'wrong') sounds.wrong.triggerAttackRelease("C3", "8n"); else if (type === 'badge') { sounds.badge.triggerAttackRelease("G4", "8n", Tone.now()); sounds.badge.triggerAttackRelease("C5", "8n", Tone.now() + 0.2); sounds.badge.triggerAttackRelease("E5", "8n", Tone.now() + 0.4); } else if (type === 'open') { sounds.open.triggerAttackRelease("A4", "16n"); } else if (type === 'purchase') { sounds.purchase.triggerAttackRelease("E5", "8n"); } else if (type === 'equip') { sounds.equip.triggerAttackRelease("C5", "4n"); } else sounds.click.triggerAttackRelease("C4", "8n"); } catch (e) { console.error("Sound play error:", e); } }
+        function speak(text, lang = 'id-ID') { if ('speechSynthesis' in window) { speechSynthesis.cancel(); const utterance = new SpeechSynthesisUtterance(text); utterance.lang = lang; utterance.rate = 0.9; speechSynthesis.speak(utterance); } }
+        function saveData() { if (currentUserIndex > -1) userProfiles[currentUserIndex] = activeUser; localStorage.setItem('petualanganPenggunaEkspansi', JSON.stringify(userProfiles)); }
+        function loadData() { const d = localStorage.getItem('petualanganPenggunaEkspansi'); if (d) { userProfiles = JSON.parse(d); return userProfiles.length > 0; } return false; }
+        function selectUser(idx) { currentUserIndex = idx; activeUser = userProfiles[idx]; if (!activeUser.jenjang) { domElements.jenjangPromptName.textContent = `Hai ${activeUser.name}, ayo pilih jenjangmu!`; switchScreen('jenjang-screen'); } else { applySettings(); startSession(); } }
+        function initializeProgressForJenjang(jenjang) { if (!edukasiData[jenjang] || !activeUser) return; if (!activeUser.progress) activeUser.progress = {}; if (!activeUser.badges) activeUser.badges = {}; if(!activeUser.stats) activeUser.stats = { correctAnswers: 0, wrongAnswers: 0, quizzesCompleted: 0 }; if (activeUser.progress[jenjang]) return; activeUser.progress[jenjang] = {}; activeUser.badges[jenjang] = []; for (const duniaId in edukasiData[jenjang].dunia) { activeUser.progress[jenjang][duniaId] = {}; for (const submateriId in edukasiData[jenjang].dunia[duniaId].subMateri) { activeUser.progress[jenjang][duniaId][submateriId] = { done: false }; } } saveData(); }
+        function switchScreen(id) { domElements.screens.forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        function showModal(id) { playSound('open'); document.getElementById(id).classList.add('active'); }
+        function hideModals() { domElements.modals.forEach(m => m.classList.remove('active')); }
+        function startSession() { checkDailyLogin(); checkDailyMission(); setDailyBonusWorld(); updateUI(); renderDuniaMap(); switchScreen('map-screen'); }
+        function applySettings() { document.body.className = ''; document.body.classList.add(activeUser.settings.theme); document.body.classList.add(`font-size-${activeUser.settings.fontSize}`); toggleMusic(activeUser.settings.musicOn); }
+        function renderUserSelectionScreen() { domElements.userListContainer.innerHTML = ''; userProfiles.forEach((user, index) => { const jenjangText = user.jenjang ? {sd: "SD", smp: "SMP", sma: "SMA", kuliah: "Kuliah"}[user.jenjang] : 'Baru'; const card = document.createElement('div'); card.className = 'user-card p-4 bg-white rounded-2xl shadow-lg text-center cursor-pointer card-hover'; const avatarHTML = avatarData[user.avatarId]?.svg || `<div class="avatar mx-auto mb-4 bg-gray-400 font-brand text-3xl">${user.name.charAt(0).toUpperCase()}</div>`; card.innerHTML = `${avatarHTML}<h3 class="font-bold text-xl">${user.name}</h3><p class="text-gray-500">${jenjangText} - ${user.points} Poin</p>`; card.addEventListener('click', () => { playSound('click'); selectUser(index); }); domElements.userListContainer.appendChild(card); }); switchScreen('user-selection-screen'); }
+        function renderDuniaMap(filter = '') { const jenjang = activeUser.jenjang; const dataDunia = edukasiData[jenjang].dunia; domElements.duniaContainer.innerHTML = ''; 
+             for (const duniaId in dataDunia) { const dunia = dataDunia[duniaId]; 
+            if (filter && !dunia.namaDunia.toLowerCase().includes(filter.toLowerCase())) continue;
+            const c = colorMapping[dunia.warna] || colorMapping.blue; const progress = activeUser.progress[jenjang]?.[duniaId] || {}; const total = Object.keys(dunia.subMateri).length; const completed = Object.values(progress).filter(p => p.done).length; const percentage = total > 0 ? (completed / total) * 100 : 0; const card = document.createElement('div'); card.className = `p-6 rounded-2xl shadow-lg cursor-pointer card-hover border-4 ${c.border} flex flex-col relative`; card.style.backgroundColor = `var(--card-bg-color)`;
+            let bonusBadge = '';
+            if (duniaId === dailyBonusWorldId) {
+                bonusBadge = '<div class="bonus-world-badge">BONUS!</div>';
+            }
+            card.innerHTML = `${bonusBadge}<div class="text-5xl text-center mb-4">${dunia.icon}</div><h3 class="font-brand text-2xl text-center ${c.text}">${dunia.namaDunia}</h3><p class="text-sm mt-2 text-center flex-grow min-h-[60px]">${dunia.deskripsi}</p><div class="mt-4"><div class="text-xs font-semibold text-center mb-1">${completed} / ${total > 0 ? total : 20} Selesai</div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="${c.progress} h-2.5 rounded-full" style="width: ${percentage}%;"></div></div></div>`; card.addEventListener('click', () => { playSound('click'); currentDuniaId = duniaId; renderSubMateri(duniaId); switchScreen('submateri-screen'); }); domElements.duniaContainer.appendChild(card); } }
+        function renderSubMateri(duniaId) { 
+            const dunia = edukasiData[activeUser.jenjang].dunia[duniaId];
+            if (!dunia || Object.keys(dunia.subMateri).length === 0) {
+                domElements.submateriTitle.textContent = dunia.namaDunia;
+                domElements.submateriContainer.innerHTML = `<p class="text-center col-span-full">Konten untuk dunia ini sedang dalam pengembangan. Nantikan pembaruan selanjutnya!</p>`;
+                switchScreen('submateri-screen');
+                return;
+            }
+            const useTreeView = domElements.progressTreeToggle.checked;
+
+            const colors = colorMapping[dunia.warna]; domElements.submateriTitle.textContent = dunia.namaDunia; domElements.submateriTitle.className = `font-brand text-4xl md:text-5xl text-center ${colors.text}`; domElements.submateriContainer.innerHTML = '';
+            let prevSubmateriId = null; 
+            for (const submateriId in dunia.subMateri) { const submateri = dunia.subMateri[submateriId]; const isCompleted = activeUser.progress[activeUser.jenjang]?.[duniaId]?.[submateriId]?.done;
+                let isLocked = false;
+                if(useTreeView) {
+                    const prevIsCompleted = prevSubmateriId ? activeUser.progress[activeUser.jenjang]?.[duniaId]?.[prevSubmateriId]?.done : true;
+                    if(!prevIsCompleted) isLocked = true;
+                }
+
+                const card = document.createElement('div'); card.className = `p-5 rounded-xl shadow-md flex items-center justify-between border-2 ${colors.border} ${isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer card-hover'}`;
+                card.innerHTML = `<span class="font-semibold ${colors.text}">${submateri.judul}</span> ${isCompleted ? `<span class="text-2xl text-yellow-500 star-animation">⭐</span>` : (isLocked ? `<span>🔒</span>` : `<span class="w-6 h-6 rounded-full border-2 ${colors.border}"></span>`)}`; 
+                if(!isLocked) {
+                    card.addEventListener('click', () => { playSound('click'); currentSubmateriId = submateriId; renderMateri(duniaId, submateriId); switchScreen('materi-screen'); });
+                }
+                domElements.submateriContainer.appendChild
+
