@@ -2552,11 +2552,38 @@
             });
         });
 
-        // Fullscreen
-        document.getElementById('fullscreen-btn').addEventListener('click', () => {
-            if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
-            else document.exitFullscreen().catch(()=>{});
-        });
+        // Fullscreen (robust cross-browser toggle, update icon, play sound)
+        (function wireFullscreen(){
+            const btn = document.getElementById('fullscreen-btn');
+            if (!btn) return;
+            function isFullscreen() { return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement); }
+            function requestFS(el) {
+                if (el.requestFullscreen) return el.requestFullscreen();
+                if (el.webkitRequestFullscreen) return el.webkitRequestFullscreen();
+                if (el.mozRequestFullScreen) return el.mozRequestFullScreen();
+                if (el.msRequestFullscreen) return el.msRequestFullscreen();
+                return Promise.reject(new Error('No fullscreen API'));
+            }
+            function exitFS() {
+                if (document.exitFullscreen) return document.exitFullscreen();
+                if (document.webkitExitFullscreen) return document.webkitExitFullscreen();
+                if (document.mozCancelFullScreen) return document.mozCancelFullScreen();
+                if (document.msExitFullscreen) return document.msExitFullscreen();
+                return Promise.reject(new Error('No exit fullscreen'));
+            }
+            // set initial icon
+            try { btn.textContent = isFullscreen() ? '❐' : '⛶'; } catch(e){}
+            btn.addEventListener('click', (ev)=>{
+                ev.preventDefault(); try { playSound('click'); } catch(e){}
+                if (!isFullscreen()) {
+                    requestFS(document.documentElement).then(()=>{ try{ btn.textContent = '❐'; }catch(e){} }).catch(()=>{});
+                } else {
+                    exitFS().then(()=>{ try{ btn.textContent = '⛶'; }catch(e){} }).catch(()=>{});
+                }
+            });
+            // keep icon in sync when user exits with ESC
+            document.addEventListener('fullscreenchange', ()=>{ try{ btn.textContent = isFullscreen() ? '❐' : '⛶'; }catch(e){} });
+        })();
 
         // Export / Import progress (JSON)
         function exportProgress() {
@@ -2633,6 +2660,20 @@
                 saveData(); applyVolumeSettings();
             });
             domElements.sfxToggle.addEventListener('change', (e)=>{ toggleSfx(!!e.target.checked); });
+        } catch(e){}
+
+        // Attach guarded click SFX to header buttons (avoid duplicate bindings)
+        try {
+            const headerClickIds = ['settings-btn','achievements-btn','daily-mission-btn','shop-hub-btn','inventory-btn','leaderboard-btn','fullscreen-btn'];
+            headerClickIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (el.dataset.listenerAttached) return;
+                el.addEventListener('click', (ev)=>{
+                    try { playSound('click'); } catch(e){ /* ignore */ }
+                });
+                el.dataset.listenerAttached = '1';
+            });
         } catch(e){}
 
         // Render shops and purchase logic
