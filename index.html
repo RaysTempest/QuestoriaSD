@@ -1808,6 +1808,76 @@
             // persist
             try { saveData(); } catch(e){}
         }
+
+        // Acceptable built-in equip keys (defaults and safe fallbacks)
+        const ACCEPTED_DEFAULT_EQUIP_KEYS = new Set([ 'calm1', 'sfx_click_soft', 'sfx_click_tick', 'sfx_win_chime', 'sfx_error', 'open', 'badge', 'purchase' ]);
+
+        // Return true if the given user owns the item (by id or by toko)
+        function isItemOwned(user, itemId, tokoKey) {
+            if (!user || !itemId) return false;
+            // avatars: check unlockedAvatars
+            if (tokoKey === 'tokoAvatar' || (tokoKey === 'avatar' || typeof tokoKey === 'undefined' && itemId && itemId.startsWith('avatar'))) {
+                if (user.unlockedAvatars && user.unlockedAvatars.includes(itemId)) return true;
+            }
+            // inventory entries
+            if (user.inventory && Array.isArray(user.inventory)) {
+                for (const it of user.inventory) {
+                    try {
+                        if (it.id === itemId) return true;
+                        // some store entries equip by preview key
+                        if (it.item && (it.item.preview === itemId || it.item.id === itemId)) return true;
+                    } catch(e){}
+                }
+            }
+            // accept built-in defaults
+            if (ACCEPTED_DEFAULT_EQUIP_KEYS.has(itemId)) return true;
+            // also accept if the key maps to an available sound player
+            try { if (typeof sounds !== 'undefined' && sounds[itemId]) return true; } catch(e){}
+            // accept if shopData contains an item with matching id or preview
+            try {
+                for (const toko in shopData) {
+                    const items = shopData[toko].items || {};
+                    for (const k in items) {
+                        const s = items[k];
+                        if (k === itemId) return true;
+                        if (s.preview === itemId) return true;
+                    }
+                }
+            } catch(e){}
+            return false;
+        }
+
+        // Remove any equipped references that the user doesn't own (sanitizes restored data)
+        function sanitizeUserEquipped(user) {
+            if (!user) return;
+            try {
+                if (!user.equipped) return;
+                // sanitize bgm
+                if (user.equipped.bgm && !isItemOwned(user, user.equipped.bgm)) {
+                    // allow fallback to default
+                    delete user.equipped.bgm;
+                }
+                // sanitize sfx slots (any property starting with 'sfx_')
+                Object.keys(user.equipped).forEach(k => {
+                    if (!k.startsWith('sfx_')) return;
+                    const val = user.equipped[k];
+                    if (val && !isItemOwned(user, val)) {
+                        delete user.equipped[k];
+                    }
+                });
+                // sanitize avatar: ensure avatarId is unlocked or a starter
+                if (user.avatarId) {
+                    const starterAvatars = Object.keys(avatarData || {}).filter(id => avatarData[id] && avatarData[id].isStarter);
+                    const allowed = (user.unlockedAvatars && user.unlockedAvatars.includes(user.avatarId)) || starterAvatars.includes(user.avatarId);
+                    if (!allowed) {
+                        // fallback to first starter
+                        user.avatarId = starterAvatars.length ? starterAvatars[0] : null;
+                    }
+                }
+                // persist changes
+                saveData();
+            } catch(e) { console.warn('sanitizeUserEquipped error', e); }
+        }
         
         function initializeProgressForJenjang(jenjang) {
             if (!edukasiData[jenjang] || !activeUser) return;
@@ -2270,7 +2340,7 @@
                 try { ensureAchievementDefinitions(15); } catch(e) {}
                 if (loadData() && userProfiles.length > 0) { 
                     // ensure old users have default equipped audio if missing
-                    try { userProfiles.forEach(u => { if (!u.equipped) ensureDefaultAudioEquipped(u); }); } catch(e){}
+                    try { userProfiles.forEach(u => { if (!u.equipped) ensureDefaultAudioEquipped(u); sanitizeUserEquipped(u); }); } catch(e){}
                     renderUserSelectionScreen();
                 } else { 
                     setupNewUserScreen();
@@ -2290,6 +2360,7 @@
                     playSound('click'); 
                     currentUserIndex = index; 
                     activeUser = userProfiles[index];
+                    try { sanitizeUserEquipped(activeUser); } catch(e){}
                     if (!activeUser.jenjang) {
                         domElements.jenjangPromptName.textContent = `Hai ${activeUser.name}, ayo pilih jenjangmu!`;
                         switchScreen('jenjang-screen');
@@ -2902,19 +2973,22 @@
             showModal('generic-shop-modal');
             // listen for purchases and refresh this shop view while modal is open
             try {
+                window._shopPurchaseListeners = window._shopPurchaseListeners || {};
+                // remove previous listener for this tokoKey if present
+                if (window._shopPurchaseListeners[tokoKey]) {
+                    try { window.removeEventListener('shop:purchase', window._shopPurchaseListeners[tokoKey]); } catch(e){}
+                }
                 const onPurchase = (ev) => {
-                    // if the generic shop modal is still visible and the same shop is open, re-render
                     const modal = document.getElementById('generic-shop-modal');
                     if (modal && modal.classList.contains('active')) {
-                        // re-render the same tokoKey to refresh owned/equipped states
                         setTimeout(()=> renderShop(tokoKey), 80);
                     }
                 };
-                // use a short-lived listener (remove it when modal hides)
-                window.addEventListener('shop:purchase', onPurchase, { once: false });
+                window._shopPurchaseListeners[tokoKey] = onPurchase;
+                window.addEventListener('shop:purchase', onPurchase);
                 // cleanup when modal closes
-                modalCleanupRegistry = modalCleanupRegistry || [];
-                modalCleanupRegistry.push(() => window.removeEventListener('shop:purchase', onPurchase));
+                window.modalCleanupRegistry = window.modalCleanupRegistry || [];
+                window.modalCleanupRegistry.push(() => { try { window.removeEventListener('shop:purchase', onPurchase); delete window._shopPurchaseListeners[tokoKey]; } catch(e){} });
             } catch(e){}
         }
 
@@ -2945,8 +3019,9 @@
             });
             showModal('avatar-shop-modal');
             try {
+                window._shopPurchaseListeners = window._shopPurchaseListeners || {};
+                if (window._shopPurchaseListeners.avatar) { try { window.removeEventListener('shop:purchase', window._shopPurchaseListeners.avatar); } catch(e){} }
                 const onPurchaseAvatar = (ev) => {
-                    // refresh avatar shop contents and points display
                     domElements.avatarShopContainer.innerHTML = '';
                     domElements.shopPointsDisplay.textContent = `${activeUser.points} Poin`;
                     Object.keys(shopData.tokoAvatar.items).forEach(id => {
@@ -2957,9 +3032,10 @@
                         domElements.avatarShopContainer.appendChild(div);
                     });
                 };
+                window._shopPurchaseListeners.avatar = onPurchaseAvatar;
                 window.addEventListener('shop:purchase', onPurchaseAvatar);
-                modalCleanupRegistry = modalCleanupRegistry || [];
-                modalCleanupRegistry.push(() => window.removeEventListener('shop:purchase', onPurchaseAvatar));
+                window.modalCleanupRegistry = window.modalCleanupRegistry || [];
+                window.modalCleanupRegistry.push(() => { try { window.removeEventListener('shop:purchase', onPurchaseAvatar); delete window._shopPurchaseListeners.avatar; } catch(e){} });
             } catch(e){}
         });
 
@@ -3328,30 +3404,52 @@
                 // apply focus trap
                 if (currentModalTrap) currentModalTrap();
                 currentModalTrap = trapFocus(modal);
-            }, 60);
-        }
-
-        function enhancedHideModals() {
-            document.querySelectorAll('.modal-overlay.active').forEach(m => {
-                m.classList.remove('active'); m.setAttribute('aria-hidden', 'true');
-            });
-            // run any modal-specific cleanup (e.g., shop purchase listeners)
             try {
+                window._shopPurchaseListeners = window._shopPurchaseListeners || {};
+                if (window._shopPurchaseListeners.inventory) { try { window.removeEventListener('shop:purchase', window._shopPurchaseListeners.inventory); } catch(e){} }
+                const onPurchaseInventory = (ev) => {
+                    if (!document.getElementById('inventory-modal').classList.contains('active')) return;
+                    domElements.inventoryList.innerHTML = '';
+                    const inv = (activeUser.inventory || []).slice().reverse();
+                    if (inv.length === 0) domElements.inventoryList.innerHTML = '<p class="text-sm text-gray-500">Inventori kosong.</p>';
+                    inv.forEach((it, idx) => {
+                        const card = document.createElement('div'); card.className = 'p-3 rounded-xl bg-white';
+                        const name = it.item?.name || it.name || it.id;
+                        card.innerHTML = `<div class="font-semibold">${name}</div><div class="text-sm text-gray-500">${it.toko || ''}</div>`;
+                        const btnWrap = document.createElement('div'); btnWrap.className='mt-2 flex gap-2';
+                        const equipBtn = document.createElement('button'); equipBtn.className='px-2 py-1 bg-sky-500 text-white rounded'; equipBtn.textContent='Gunakan';
+                        equipBtn.addEventListener('click', ()=>{ equipItem(it); });
+                        btnWrap.appendChild(equipBtn);
+                        card.appendChild(btnWrap);
+                        domElements.inventoryList.appendChild(card);
+                    });
+                };
+                window._shopPurchaseListeners.inventory = onPurchaseInventory;
+                window.addEventListener('shop:purchase', onPurchaseInventory);
+                window.modalCleanupRegistry = window.modalCleanupRegistry || [];
+                window.modalCleanupRegistry.push(() => { try { window.removeEventListener('shop:purchase', onPurchaseInventory); delete window._shopPurchaseListeners.inventory; } catch(e){} });
+            } catch(e){}
+            }, 20); // end setTimeout callback in enhancedShowModal
+        } // end enhancedShowModal
+
+        // complementary enhanced hide modal to run cleanup and restore focus
+        function enhancedHideModals() {
+            try {
+                // run any registered modal cleanup functions (remove listeners, etc.)
                 if (window.modalCleanupRegistry && Array.isArray(window.modalCleanupRegistry)) {
                     window.modalCleanupRegistry.forEach(fn => { try { fn(); } catch(e){} });
                     window.modalCleanupRegistry.length = 0;
                 }
+                // hide all modal overlays
+                document.querySelectorAll('.modal-overlay.active').forEach(m => { try { m.classList.remove('active'); m.setAttribute('aria-hidden','true'); } catch(e){} });
+                // remove focus trap if present
+                if (currentModalTrap) { try { currentModalTrap(); } catch(e){} currentModalTrap = null; }
+                // restore focus to previously focused element
+                if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') { try { lastFocusedBeforeModal.focus(); } catch(e){} }
+                try { playSound('close'); } catch(e){}
             } catch(e){}
-            if (currentModalTrap) { currentModalTrap(); currentModalTrap = null; }
-            // return focus
-            if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') lastFocusedBeforeModal.focus();
         }
-    // expose to global so earlier wrappers can call them safely
-    window.enhancedShowModal = enhancedShowModal;
-    window.enhancedHideModals = enhancedHideModals;
-    // also keep backwards-compatible names
-    window.showModal = enhancedShowModal;
-    window.hideModals = enhancedHideModals;
+        window.hideModals = enhancedHideModals;
 
         // spawn a floating confirmation near an element
         function spawnFloatingConfirm(targetEl, text) {
@@ -3404,8 +3502,8 @@
                     });
                 };
                 window.addEventListener('shop:purchase', onPurchaseInventory);
-                modalCleanupRegistry = modalCleanupRegistry || [];
-                modalCleanupRegistry.push(() => window.removeEventListener('shop:purchase', onPurchaseInventory));
+                window.modalCleanupRegistry = window.modalCleanupRegistry || [];
+                window.modalCleanupRegistry.push(() => window.removeEventListener('shop:purchase', onPurchaseInventory));
             } catch(e){}
         }
 
