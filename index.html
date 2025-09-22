@@ -138,9 +138,38 @@
         .favorite-btn.favorited svg { fill: #facc15; stroke: #f59e0b; }
     /* --- Achievements card styles (borrowed from index.html) --- */
     .achievement-card { display:flex; gap:12px; align-items:flex-start; padding:14px; border-radius:10px; background:var(--card-bg-color); border:1px solid #e8edf2; box-shadow: none; }
+    /* Dunia card specific tweaks to better match design */
+    .dunia-card-custom { display:flex; flex-direction:column; align-items:center; text-align:center; padding:22px; border-radius:18px; }
+    .dunia-card-custom .dunia-icon { width:80px; height:80px; display:flex; align-items:center; justify-content:center; border-radius:12px; margin-bottom:10px; }
+    .dunia-card-custom .dunia-title { font-size:1.6rem; line-height:1.05; font-weight:700; color:#6d28d9; margin:6px 0; }
+    .dunia-card-custom .dunia-desc { color: #334155; font-size:0.95rem; max-width:240px; margin:4px 0 12px; }
+    .dunia-card-custom .dunia-progress-count { font-size:0.95rem; font-weight:700; color:#111827; margin-bottom:6px; }
+    /* Slightly thicker border for focus / purple worlds */
+    .border-purple-400 { border-color: #ddd6fe !important; }
+    /* More precise styling to match the provided mock */
+    .dunia-title.fw-tight { font-size:2.05rem; letter-spacing:0.6px; line-height:1.02; }
+    .dunia-desc { line-height:1.6; color: #334155; }
+    .dunia-card-custom.purple-focus { border-width:6px; border-color: rgba(124,58,237,0.18); box-shadow: 0 10px 30px rgba(124,58,237,0.06); }
+    .dunia-icon { background: rgba(124,58,237,0.04); }
     .achievement-card.locked { filter: var(--locked-filter); opacity: 0.95; }
+    /* unlocked visual */
+    .achievement-card.unlocked { background: linear-gradient(90deg, rgba(255,250,240,0.9), var(--card-bg-color)); border-color: rgba(99,102,241,0.18); box-shadow: 0 10px 24px rgba(99,102,241,0.06); }
+    .achievement-card.unlocked .achievement-title { color: #1e3a8a; }
+    .achievement-card.unlocked .achievement-desc { color: #2563eb; }
+    /* completion animation used when an achievement is freshly unlocked */
+    .achievement-complete { animation: achievement-pop 900ms cubic-bezier(.2,.9,.3,1) both; transform-origin: left center; }
+    @keyframes achievement-pop { 0% { transform: scale(.96) translateX(-4px); box-shadow: none; } 50% { transform: scale(1.03) translateX(0); box-shadow: 0 18px 40px rgba(37,99,235,0.12); } 100% { transform: scale(1) translateX(0); } }
     .achievement-icon { width:44px; height:44px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:18px; background:#f1f5f9; border:1px solid rgba(0,0,0,0.03); flex-shrink:0; }
     .achievement-icon svg { width:28px; height:28px; display:block; }
+    /* slightly larger icon to match screenshot */
+    .achievement-icon { width:56px; height:56px; border-radius:12px; }
+    .achievement-icon svg { width:36px; height:36px; }
+    /* right-side pill for claimed state */
+    .achievement-pill { margin-left:12px; align-self:center; background: linear-gradient(180deg,#6b7280,#4b5563); color:white; padding:8px 14px; border-radius:999px; font-weight:700; }
+    .achievement-pill.unlocked { background: linear-gradient(180deg,#34d399,#10b981); color:white; }
+    /* checkmark badge top-left of icon */
+    .achievement-check { position: absolute; right: 12px; top: 12px; background: #10b981; color: white; border-radius: 999px; width:26px; height:26px; display:flex; align-items:center; justify-content:center; font-size:14px; box-shadow: 0 4px 12px rgba(16,185,129,0.18); }
+    .achievement-card { position: relative; }
     .achievement-body { flex:1; min-width:0; }
     .achievement-title { font-weight:700; font-size:1.05rem; color:#2b6ea3; margin-bottom:6px; }
     .achievement-desc { font-size:0.95rem; color:#7ea6bf; line-height:1.25; }
@@ -262,14 +291,46 @@
        <button id="daily-mission-btn" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">🎯 Misi</button>
        <button id="leaderboard-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">🥇 Peringkat</button>
        <button id="achievements-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">🏆 Prestasi</button>
-    <button id="settings-btn" class="bg-gray-700 hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">⚙️</button>
-    <button id="inventory-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">🎒 Inventori</button>
+         <button id="settings-btn" class="bg-gray-700 hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">⚙️</button>
+         <button id="ai-learn-btn" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">🤖 Belajar dengan AI</button>
+     <button id="inventory-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">🎒 Inventori</button>
        
     <!-- AWAL KODE BARU: Tombol Fullscreen -->
     <button id="fullscreen-btn" class="bg-gray-700 hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">⛶</button>
        <!-- AKHIR KODE BARU -->
     </div>
 </header>
+
+<!-- AI Tutor Modal -->
+<div id="ai-tutor-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 items-center justify-center p-4 z-50" style="display:none;">
+    <div class="modal-content p-6 shadow-2xl w-full max-w-3xl rounded-2xl" style="background-color: var(--modal-bg-color);">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="font-brand text-2xl text-emerald-600">🤖 Belajar dengan AI</h3>
+            <button id="close-ai-tutor" class="text-gray-500">✖</button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <label class="font-semibold">Pilih Dunia / Topik</label>
+                <select id="ai-topic-select" class="w-full p-2 rounded border" style="border-color: var(--border-color); background-color: var(--card-bg-color);"></select>
+                <label class="font-semibold mt-3">Masukkan pertanyaan atau minta rangkuman singkat</label>
+                <textarea id="ai-prompt" rows="4" class="w-full p-2 rounded border" placeholder="Contoh: Jelaskan perkalian sederhana atau buatkan 3 soal latihan"></textarea>
+                <div class="flex gap-2 mt-3">
+                    <button id="ai-run-btn" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-2 px-4 rounded-lg">Minta AI</button>
+                    <button id="ai-quiz-btn" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-2 px-4 rounded-lg">Buat Kuis Cepat</button>
+                </div>
+            </div>
+            <div>
+                <label class="font-semibold">Jawaban AI</label>
+                <div id="ai-response" class="p-3 rounded-lg" style="background-color: var(--card-bg-color); min-height:160px; overflow:auto;"></div>
+                <div class="flex gap-2 mt-3">
+                    <button id="ai-read-btn" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg">Bacakan</button>
+                    <button id="ai-save-note" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg">Simpan Catatan</button>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4 text-right"><button id="close-ai-tutor-2" class="px-4 py-2 rounded bg-gray-200">Tutup</button></div>
+    </div>
+</div>
 
             <div id="event-banner-container" class="w-full mb-4 px-2"></div>
             <div class="w-full mb-4 px-2">
@@ -1642,28 +1703,57 @@
         // --- Achievement definitions (moved to global for renderer) ---
         const achievementsDefinitions = {
             sd: [
-                { id: 'sd_complete_any_dunia_1', title: 'Penjelajah Mini', desc: 'Selesaikan 1 dunia penuh', condition: (u, j) => {
-                    for (const d in edukasiData[j].dunia) { const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values((u.progress && u.progress[j] && u.progress[j][d])||{}).filter(p=>p.done).length; if(done===total) return true; } return false;
-                }},
-                { id: 'sd_5_submateri', title: 'Pecinta Belajar', desc: 'Selesaikan 5 submateri', condition: (u,j)=>{ let c=0; for(const d in (u.progress && u.progress[j])||{}) c+=Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=5; } },
+                { id: 'sd_complete_dunia_1', title: 'Penjelajah Mini', desc: 'Selesaikan 1 dunia penuh', condition: (u,j)=>{ for (const d in (edukasiData[j] && edukasiData[j].dunia)||{}){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values(((u.progress&&u.progress[j])||{})[d]||{}).filter(p=>p.done).length; if (done===total) return true; } return false; } },
+                { id: 'sd_complete_dunia_2', title: 'Penjelajah Cilik', desc: 'Selesaikan 2 dunia penuh', condition: (u,j)=>{ let c=0; for(const d in (edukasiData[j] && edukasiData[j].dunia)||{}){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values(((u.progress&&u.progress[j])||{})[d]||{}).filter(p=>p.done).length; if (done===total) c++; } return c>=2; } },
+                { id: 'sd_5_submateri', title: 'Pecinta Belajar', desc: 'Selesaikan 5 submateri', condition: (u,j)=>{ let c=0; for(const d in ((u.progress&&u.progress[j])||{})) c += Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=5; } },
+                { id: 'sd_10_submateri', title: 'Semangat 10', desc: 'Selesaikan 10 submateri', condition: (u,j)=>{ let c=0; for(const d in ((u.progress&&u.progress[j])||{})) c += Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=10; } },
                 { id: 'sd_50_points', title: 'Pengumpul Poin', desc: 'Kumpulkan 50 poin', condition: (u)=> (u.points||0) >= 50 },
-                { id: 'sd_master_dunia_3', title: 'Raja Dunia', desc: 'Selesaikan 3 dunia', condition: (u,j)=>{ let count=0; for(const d in edukasiData[j].dunia){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values((u.progress&&u.progress[j]&&u.progress[j][d])||{}).filter(p=>p.done).length; if(done===total) count++; } return count>=3; } },
-                { id: 'sd_favorite_5', title: 'Pemilih Cermat', desc: 'Tambahkan 5 favorit', condition: (u)=> (u.favorites && u.favorites.length>=5) }
+                { id: 'sd_150_points', title: 'Poin Juara Kelas', desc: 'Kumpulkan 150 poin', condition: (u)=> (u.points||0) >= 150 },
+                { id: 'sd_favorite_1', title: 'Suka Sekali', desc: 'Tambahkan 1 favorit', condition: (u)=> (u.favorites && u.favorites.length>=1) },
+                { id: 'sd_favorite_5', title: 'Pemilih Cermat', desc: 'Tambahkan 5 favorit', condition: (u)=> (u.favorites && u.favorites.length>=5) },
+                { id: 'sd_quiz_5', title: 'Si Juara Kecil', desc: 'Selesaikan 5 kuis', condition: (u)=> (u.stats && (u.stats.quizzesCompleted||0) >= 5) },
+                { id: 'sd_correct_20', title: 'Pintar', desc: 'Jawaban benar 20 kali', condition: (u)=> (u.stats && (u.stats.correctAnswers||0) >= 20) },
+                { id: 'sd_login_3', title: 'Rajin Masuk', desc: 'Masuk 3 hari berturut-turut', condition: (u)=> (u.loginStreak && u.loginStreak >= 3) },
+                { id: 'sd_master_math', title: 'Pakar Matematika Dasar', desc: 'Selesaikan semua submateri di 1 dunia matematika', condition: (u,j)=>{ const dunia = edukasiData[j] && edukasiData[j].dunia && edukasiData[j].dunia['matematika_dasar']; if (!dunia) return false; const total = Object.keys(dunia.subMateri).length; const done = Object.values(((u.progress&&u.progress[j])||{})['matematika_dasar']||{}).filter(p=>p.done).length; return done===total; } }
             ],
             smp: [
-                { id: 'smp_1_dunia', title: 'Pemburu Dunia', desc: 'Selesaikan 1 dunia SMP', condition: (u,j)=>{ for (const d in edukasiData[j].dunia){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values((u.progress&&u.progress[j]&&u.progress[j][d])||{}).filter(p=>p.done).length; if(done===total) return true;} return false; } },
-                { id: 'smp_10_sub', title: 'Gigih SMP', desc: 'Selesaikan 10 submateri', condition: (u,j)=>{ let c=0; for(const d in (u.progress&&u.progress[j])||{}) c+=Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=10; } },
-                { id: 'smp_100_points', title: 'Poin SMP', desc: 'Kumpulkan 100 poin', condition: (u)=> (u.points||0)>=100 }
+                { id: 'smp_complete_dunia_1', title: 'Pemburu Dunia', desc: 'Selesaikan 1 dunia SMP', condition: (u,j)=>{ for (const d in (edukasiData[j] && edukasiData[j].dunia)||{}){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values(((u.progress&&u.progress[j])||{})[d]||{}).filter(p=>p.done).length; if (done===total) return true; } return false; } },
+                { id: 'smp_10_sub', title: 'Gigih SMP', desc: 'Selesaikan 10 submateri', condition: (u,j)=>{ let c=0; for(const d in ((u.progress&&u.progress[j])||{})) c += Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=10; } },
+                { id: 'smp_20_sub', title: 'Gigih +', desc: 'Selesaikan 20 submateri', condition: (u,j)=>{ let c=0; for(const d in ((u.progress&&u.progress[j])||{})) c += Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=20; } },
+                { id: 'smp_100_points', title: 'Poin SMP', desc: 'Kumpulkan 100 poin', condition: (u)=> (u.points||0)>=100 },
+                { id: 'smp_300_points', title: 'Poin Hebat', desc: 'Kumpulkan 300 poin', condition: (u)=> (u.points||0)>=300 },
+                { id: 'smp_favorite_5', title: 'Kolektor Favorit', desc: 'Tambahkan 5 favorit dari jenjang SMP', condition: (u)=> (u.favorites && u.favorites.length>=5) },
+                { id: 'smp_correct_50', title: 'Pemecah Soal', desc: 'Jawaban benar 50 kali', condition: (u)=> (u.stats && (u.stats.correctAnswers||0) >= 50) },
+                { id: 'smp_challenge_1', title: 'Penantang Waktu', desc: 'Menangkan 1 Tantangan Waktu', condition: (u)=> (u.stats && (u.stats.quizzesCompleted||0) >= 1) },
+                { id: 'smp_no_hint_10', title: 'Mandiri', desc: 'Selesaikan 10 kuis tanpa petunjuk', condition: (u)=> false /* placeholder: requires hint tracking */ },
+                { id: 'smp_dunia_master_2', title: 'Penguasaan Ganda', desc: 'Selesaikan 2 dunia penuh', condition: (u,j)=>{ let c=0; for(const d in (edukasiData[j] && edukasiData[j].dunia)||{}){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values(((u.progress&&u.progress[j])||{})[d]||{}).filter(p=>p.done).length; if(done===total) c++; } return c>=2; } },
+                { id: 'smp_login_7', title: 'Tujuh Hari Beruntun', desc: 'Login 7 hari berturut-turut', condition: (u)=> (u.loginStreak && u.loginStreak >= 7) },
+                { id: 'smp_reading_club', title: 'Pembaca Cerdas', desc: 'Buka 10 materi berbeda', condition: (u)=>{ try{ const progress = u.progress || {}; let c=0; for(const jn in progress) for(const d in progress[jn]) c += Object.values(progress[jn][d]).filter(p=>p.done).length; return c>=10;}catch(e){return false;} } }
             ],
             sma: [
-                { id: 'sma_1_dunia', title: 'Eksplorer SMA', desc: 'Selesaikan 1 dunia SMA', condition: (u,j)=>{ for (const d in edukasiData[j].dunia){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values((u.progress&&u.progress[j]&&u.progress[j][d])||{}).filter(p=>p.done).length; if(done===total) return true;} return false; } },
-                { id: 'sma_20_sub', title: 'Konsisten SMA', desc: 'Selesaikan 20 submateri', condition: (u,j)=>{ let c=0; for(const d in (u.progress&&u.progress[j])||{}) c+=Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=20; } },
-                { id: 'sma_500_points', title: 'Pengoleksi SMA', desc: 'Kumpulkan 500 poin', condition: (u)=> (u.points||0)>=500 }
+                { id: 'sma_complete_dunia_1', title: 'Eksplorer SMA', desc: 'Selesaikan 1 dunia SMA', condition: (u,j)=>{ for (const d in (edukasiData[j] && edukasiData[j].dunia)||{}){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values(((u.progress&&u.progress[j])||{})[d]||{}).filter(p=>p.done).length; if(done===total) return true; } return false; } },
+                { id: 'sma_20_sub', title: 'Konsisten SMA', desc: 'Selesaikan 20 submateri', condition: (u,j)=>{ let c=0; for(const d in ((u.progress&&u.progress[j])||{})) c += Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=20; } },
+                { id: 'sma_50_sub', title: 'Maraton SMA', desc: 'Selesaikan 50 submateri', condition: (u,j)=>{ let c=0; for(const d in ((u.progress&&u.progress[j])||{})) c += Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=50; } },
+                { id: 'sma_500_points', title: 'Pengoleksi SMA', desc: 'Kumpulkan 500 poin', condition: (u)=> (u.points||0)>=500 },
+                { id: 'sma_1000_points', title: 'Deretan Poin', desc: 'Kumpulkan 1.000 poin', condition: (u)=> (u.points||0)>=1000 },
+                { id: 'sma_researcher', title: 'Peneliti Muda', desc: 'Baca dan selesaikan 20 materi', condition: (u)=>{ try{ const progress = u.progress || {}; let c=0; for(const jn in progress) for(const d in progress[jn]) c += Object.values(progress[jn][d]).filter(p=>p.done).length; return c>=20;}catch(e){return false;} } },
+                { id: 'sma_quiz_master_100', title: 'Ahli Kuis', desc: 'Jawaban benar 100 kali', condition: (u)=> (u.stats && (u.stats.correctAnswers||0) >= 100) },
+                { id: 'sma_project_1', title: 'Proyek Pertama', desc: 'Selesaikan tugas proyek atau catatan (manual claim)', condition: (u)=> false /* placeholder for manual or external trigger */ },
+                { id: 'sma_collaborator', title: 'Kerja Kelompok', desc: 'Bagikan 3 catatan atau hasil kerja', condition: (u)=> false /* requires sharing tracking */ },
+                { id: 'sma_login_14', title: 'Dua Minggu Aktif', desc: 'Login 14 hari berturut-turut', condition: (u)=> (u.loginStreak && u.loginStreak >= 14) },
+                { id: 'sma_world_master', title: 'Master Dunia', desc: 'Selesaikan semua dunia pada jenjang SMA', condition: (u,j)=>{ let all=true; for(const d in (edukasiData[j] && edukasiData[j].dunia)||{}){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values(((u.progress&&u.progress[j])||{})[d]||{}).filter(p=>p.done).length; if(done<total) { all=false; break; } } return all; } }
             ],
             kuliah: [
-                { id: 'kul_1_dunia', title: 'Sarjana Muda', desc: 'Selesaikan 1 dunia kuliah', condition: (u,j)=>{ for (const d in edukasiData[j].dunia){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values((u.progress&&u.progress[j]&&u.progress[j][d])||{}).filter(p=>p.done).length; if(done===total) return true;} return false; } },
-                { id: 'kul_30_sub', title: 'Rajin Kuliah', desc: 'Selesaikan 30 submateri', condition: (u,j)=>{ let c=0; for(const d in (u.progress&&u.progress[j])||{}) c+=Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=30; } },
-                { id: 'kul_1000_points', title: 'Dekanat', desc: 'Kumpulkan 1000 poin', condition: (u)=> (u.points||0)>=1000 }
+                { id: 'kul_complete_dunia_1', title: 'Sarjana Muda', desc: 'Selesaikan 1 dunia kuliah', condition: (u,j)=>{ for (const d in (edukasiData[j] && edukasiData[j].dunia)||{}){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values(((u.progress&&u.progress[j])||{})[d]||{}).filter(p=>p.done).length; if(done===total) return true; } return false; } },
+                { id: 'kul_30_sub', title: 'Rajin Kuliah', desc: 'Selesaikan 30 submateri', condition: (u,j)=>{ let c=0; for(const d in ((u.progress&&u.progress[j])||{})) c += Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=30; } },
+                { id: 'kul_60_sub', title: 'Semester Penuh', desc: 'Selesaikan 60 submateri', condition: (u,j)=>{ let c=0; for(const d in ((u.progress&&u.progress[j])||{})) c += Object.values(u.progress[j][d]).filter(p=>p.done).length; return c>=60; } },
+                { id: 'kul_1000_points', title: 'Dekanat', desc: 'Kumpulkan 1.000 poin', condition: (u)=> (u.points||0)>=1000 },
+                { id: 'kul_2500_points', title: 'Beasiswa Mini', desc: 'Kumpulkan 2.500 poin', condition: (u)=> (u.points||0)>=2500 },
+                { id: 'kul_research_pub', title: 'Peneliti', desc: 'Selesaikan modul lanjutan / publikasi (manual)', condition: (u)=> false /* manual trigger placeholder */ },
+                { id: 'kul_community', title: 'Dosen Muda', desc: 'Bantu 5 teman (manual)', condition: (u)=> false /* requires social features */ },
+                { id: 'kul_quiz_master_500', title: 'Ahli Ujian', desc: 'Jawaban benar 500 kali', condition: (u)=> (u.stats && (u.stats.correctAnswers||0) >= 500) },
+                { id: 'kul_login_30', title: 'Bulan Aktif', desc: 'Login 30 hari berturut-turut', condition: (u)=> (u.loginStreak && u.loginStreak >= 30) },
+                { id: 'kul_world_master', title: 'Master Kuliah', desc: 'Selesaikan semua dunia pada jenjang Kuliah', condition: (u,j)=>{ let all=true; for(const d in (edukasiData[j] && edukasiData[j].dunia)||{}){ const total=Object.keys(edukasiData[j].dunia[d].subMateri).length; const done=Object.values(((u.progress&&u.progress[j])||{})[d]||{}).filter(p=>p.done).length; if(done<total) { all=false; break; } } return all; } }
             ]
         };
 
@@ -1869,9 +1959,20 @@
                 const completed = Object.values(progress).filter(p => p.done).length;
                 const percentage = total > 0 ? (completed / total) * 100 : 0;
                 const card = document.createElement('div');
-                card.className = `p-6 rounded-2xl shadow-lg cursor-pointer card-hover border-4 ${c.border} flex flex-col`;
+                card.className = `p-6 rounded-2xl shadow-lg cursor-pointer card-hover border-4 ${c.border} flex flex-col items-center text-center dunia-card-custom`;
                 card.style.backgroundColor = `var(--card-bg-color)`;
-                card.innerHTML = `<div class="text-5xl text-center mb-4">${dunia.icon}</div><h3 class="font-brand text-2xl text-center ${c.text}">${dunia.namaDunia}</h3><p class="text-sm mt-2 text-center flex-grow">${dunia.deskripsi}</p><div class="mt-4"><div class="text-xs font-semibold text-center mb-1">${completed} / ${total} Selesai</div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="${c.progress} h-2.5 rounded-full" style="width: ${percentage}%;"></div></div></div>`;
+                card.innerHTML = `
+                    <div class="dunia-icon w-20 h-20"> 
+                        <div class="text-5xl">${dunia.icon}</div>
+                    </div>
+                    <h3 class="dunia-title font-brand ${c.text}">${dunia.namaDunia}</h3>
+                    <p class="dunia-desc">${dunia.deskripsi}</p>
+                    <div class="mt-4 w-full">
+                        <div class="dunia-progress-count">${completed} / ${total} Selesai</div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="${c.progress} h-2.5 rounded-full" style="width: ${percentage}%;"></div>
+                        </div>
+                    </div>`;
                 card.addEventListener('click', () => {
                     playSound('click');
                     currentDuniaId = duniaId;
@@ -1903,9 +2004,20 @@
                 const completed = Object.values(progress).filter(p => p.done).length;
                 const percentage = total > 0 ? (completed / total) * 100 : 0;
                 const card = document.createElement('div');
-                card.className = `p-6 rounded-2xl shadow-lg cursor-pointer card-hover border-4 ${c.border} flex flex-col`;
+                card.className = `p-6 rounded-2xl shadow-lg cursor-pointer card-hover border-4 ${c.border} flex flex-col items-center text-center dunia-card-custom`;
                 card.style.backgroundColor = `var(--card-bg-color)`;
-                card.innerHTML = `<div class="text-5xl text-center mb-4">${dunia.icon}</div><h3 class="font-brand text-2xl text-center ${c.text}">${dunia.namaDunia}</h3><p class="text-sm mt-2 text-center flex-grow">${dunia.deskripsi}</p><div class="mt-4"><div class="text-xs font-semibold text-center mb-1">${completed} / ${total} Selesai</div><div class="w-full bg-gray-200 rounded-full h-2.5"><div class="${c.progress} h-2.5 rounded-full" style="width: ${percentage}%;"></div></div></div>`;
+                card.innerHTML = `
+                    <div class="dunia-icon w-20 h-20"> 
+                        <div class="text-5xl">${dunia.icon}</div>
+                    </div>
+                    <h3 class="dunia-title font-brand ${c.text}">${dunia.namaDunia}</h3>
+                    <p class="dunia-desc">${dunia.deskripsi}</p>
+                    <div class="mt-4 w-full">
+                        <div class="dunia-progress-count">${completed} / ${total} Selesai</div>
+                        <div class="w-full bg-gray-200 rounded-full h-2.5">
+                            <div class="${c.progress} h-2.5 rounded-full" style="width: ${percentage}%;"></div>
+                        </div>
+                    </div>`;
                 card.addEventListener('click', () => {
                     playSound('click');
                     currentDuniaId = duniaId;
@@ -2689,6 +2801,9 @@
                 const item = toko.items[itemId];
                 const el = document.createElement('div');
                 el.className = 'shop-item p-4 rounded-xl text-center relative';
+                // annotate so we can find/update this element after purchases
+                el.dataset.itemId = itemId;
+                el.dataset.toko = tokoKey;
                 // sale badge and favorite
                 const saleBadge = item.sale ? `<div class="bonus-world-badge">Sale ${item.sale}%</div>` : '';
                 const favBtn = `<button title="Favorit" class="favorite-btn absolute top-2 left-2 text-lg">${(activeUser && activeUser.favorites && activeUser.favorites.includes(itemId)) ? '★' : '☆'}</button>`;
@@ -2727,7 +2842,18 @@
                             }
                         } catch(e){} });
 
+                    // Disable or guard equip action if item is not owned
+                    const owned = (activeUser && activeUser.inventory && activeUser.inventory.find(ii => ii.id === itemId && ii.toko === tokoKey));
+                    if (!owned) {
+                        // visually mark as locked and disable equip
+                        equipBtn.disabled = true;
+                        equipBtn.classList.add('opacity-60', 'cursor-not-allowed');
+                        equipBtn.title = 'Beli dulu untuk bisa memilih item ini';
+                    }
                     equipBtn.addEventListener('click', (ev)=>{ ev.stopPropagation(); try {
+                        // ensure ownership before allowing equip
+                        const nowOwned = (activeUser && activeUser.inventory && activeUser.inventory.find(ii => ii.id === itemId && ii.toko === tokoKey));
+                        if (!nowOwned) { playSound('wrong'); showMascotTip('Item belum dibeli. Beli dahulu dari toko.'); return; }
                         // persist equip into activeUser.equipped map
                         activeUser.equipped = activeUser.equipped || {};
                         if (item.type === 'bgm') {
@@ -2774,6 +2900,22 @@
                 domElements.genericShopContainer.appendChild(el);
             }
             showModal('generic-shop-modal');
+            // listen for purchases and refresh this shop view while modal is open
+            try {
+                const onPurchase = (ev) => {
+                    // if the generic shop modal is still visible and the same shop is open, re-render
+                    const modal = document.getElementById('generic-shop-modal');
+                    if (modal && modal.classList.contains('active')) {
+                        // re-render the same tokoKey to refresh owned/equipped states
+                        setTimeout(()=> renderShop(tokoKey), 80);
+                    }
+                };
+                // use a short-lived listener (remove it when modal hides)
+                window.addEventListener('shop:purchase', onPurchase, { once: false });
+                // cleanup when modal closes
+                modalCleanupRegistry = modalCleanupRegistry || [];
+                modalCleanupRegistry.push(() => window.removeEventListener('shop:purchase', onPurchase));
+            } catch(e){}
         }
 
         // connect shop hub buttons
@@ -2802,6 +2944,23 @@
                 domElements.avatarShopContainer.appendChild(div);
             });
             showModal('avatar-shop-modal');
+            try {
+                const onPurchaseAvatar = (ev) => {
+                    // refresh avatar shop contents and points display
+                    domElements.avatarShopContainer.innerHTML = '';
+                    domElements.shopPointsDisplay.textContent = `${activeUser.points} Poin`;
+                    Object.keys(shopData.tokoAvatar.items).forEach(id => {
+                        const it = shopData.tokoAvatar.items[id];
+                        const div = document.createElement('div'); div.className='shop-item p-3 rounded-xl text-center';
+                        div.innerHTML = `<div class='mb-2'>${it.svg || it.icon || '👤'}</div><div class='font-semibold'>${it.name}</div><div class='text-sm text-gray-500'>${it.price} Poin</div>`;
+                        if (activeUser.unlockedAvatars && activeUser.unlockedAvatars.includes(id)) div.classList.add('owned');
+                        domElements.avatarShopContainer.appendChild(div);
+                    });
+                };
+                window.addEventListener('shop:purchase', onPurchaseAvatar);
+                modalCleanupRegistry = modalCleanupRegistry || [];
+                modalCleanupRegistry.push(() => window.removeEventListener('shop:purchase', onPurchaseAvatar));
+            } catch(e){}
         });
 
     // connect generic toko buttons
@@ -2825,7 +2984,7 @@
                     activeUser.badges[jenjang] = activeUser.badges[jenjang] || [];
                     activeUser.badges[jenjang].push(duniaId);
                     playSound('badge');
-                    spawnBadgeUnlock(duniaId, `Pakar ${dunia.namaDunia}`);
+                    spawnBadgeUnlock(duniaId, `Pakar ${dunia.namaDunia}`, duniaId);
                     // world complete visual
                     const cards = domElements.duniaContainer.querySelectorAll('.card-hover');
                     Array.from(domElements.duniaContainer.children).forEach(c => { if (c.querySelector('h3') && c.querySelector('h3').textContent === dunia.namaDunia) { c.classList.add('world-complete'); setTimeout(()=>c.classList.remove('world-complete'), 1600); } });
@@ -2849,7 +3008,7 @@
                 if (!activeUser.badges[jenjang].includes(badgeId)) {
                     activeUser.badges[jenjang].push(badgeId);
                     playSound('badge');
-                    spawnBadgeUnlock(badgeId, `Master ${jenjang.toUpperCase()}`);
+                    spawnBadgeUnlock(badgeId, `Master ${jenjang.toUpperCase()}`, badgeId);
                     // big celebration
                     spawnConfetti(40);
                     showLevelUp(`${jenjang.toUpperCase()} - Master Tercapai!`);
@@ -2865,12 +3024,13 @@
                     if (achieved && !activeUser.badges[jenjang].includes(def.id)) {
                         activeUser.badges[jenjang].push(def.id);
                         playSound('badge');
-                        spawnBadgeUnlock(def.id, def.title);
+                        spawnBadgeUnlock(def.id, def.title, def.id);
                         spawnConfetti(12);
                     }
                 } catch (e) { /* ignore faulty condition */ }
             });
             saveData();
+            try { renderAchievements(activeUser.jenjang); } catch(e) {}
         }
 
         // Spawn badge unlock animation + add to UI
@@ -2895,13 +3055,21 @@
                 try {
                     const target = document.querySelector(`#achievement-${CSS.escape(targetElementId)}`) || document.querySelector(`[data-achievement-id="${targetElementId}"]`);
                     if (target) {
+                        // visually mark the achievement card as unlocked and play pop animation
+                        target.classList.remove('locked');
+                        target.classList.add('unlocked');
+                        target.classList.add('achievement-complete');
+                        // remove the animation class after it finishes so it can play again later
+                        setTimeout(() => { target.classList.remove('achievement-complete'); }, 1000);
                         // add accessible label to target for screen readers
                         try { target.setAttribute('aria-live', 'polite'); target.setAttribute('aria-atomic','true'); } catch(e){}
-                        // pulse the target
+                        // pulse the target (legacy small pulse)
                         target.classList.add('unlocked-badge');
                         target.style.transition = 'box-shadow 320ms, transform 320ms';
                         target.style.transform = 'scale(1.04)';
                         setTimeout(()=> { target.style.transform = 'scale(1)'; }, 360);
+                        // if the achievements modal is open, ensure the unlocked card is visible
+                        try { const modal = document.getElementById('achievements-modal'); if (modal && modal.classList.contains('active')) { target.scrollIntoView({ behavior: 'smooth', block: 'center' }); } } catch(e) {}
 
                         // small focused confetti burst
                         const rect = target.getBoundingClientRect();
@@ -3105,6 +3273,8 @@
             }
         }
 
+            
+
         // Search bar wiring: filter dunia as user types (debounced)
         if (domElements.searchBar) {
             let searchTimer = null;
@@ -3165,6 +3335,13 @@
             document.querySelectorAll('.modal-overlay.active').forEach(m => {
                 m.classList.remove('active'); m.setAttribute('aria-hidden', 'true');
             });
+            // run any modal-specific cleanup (e.g., shop purchase listeners)
+            try {
+                if (window.modalCleanupRegistry && Array.isArray(window.modalCleanupRegistry)) {
+                    window.modalCleanupRegistry.forEach(fn => { try { fn(); } catch(e){} });
+                    window.modalCleanupRegistry.length = 0;
+                }
+            } catch(e){}
             if (currentModalTrap) { currentModalTrap(); currentModalTrap = null; }
             // return focus
             if (lastFocusedBeforeModal && typeof lastFocusedBeforeModal.focus === 'function') lastFocusedBeforeModal.focus();
@@ -3207,10 +3384,43 @@
                 domElements.inventoryList.appendChild(card);
             });
             hideModals(); showModal('inventory-modal');
+            try {
+                const onPurchaseInventory = (ev) => {
+                    if (!document.getElementById('inventory-modal').classList.contains('active')) return;
+                    // rebuild inventory list
+                    domElements.inventoryList.innerHTML = '';
+                    const inv = (activeUser.inventory || []).slice().reverse();
+                    if (inv.length === 0) domElements.inventoryList.innerHTML = '<p class="text-sm text-gray-500">Inventori kosong.</p>';
+                    inv.forEach((it, idx) => {
+                        const card = document.createElement('div'); card.className = 'p-3 rounded-xl bg-white';
+                        const name = it.item?.name || it.name || it.id;
+                        card.innerHTML = `<div class="font-semibold">${name}</div><div class="text-sm text-gray-500">${it.toko || ''}</div>`;
+                        const btnWrap = document.createElement('div'); btnWrap.className='mt-2 flex gap-2';
+                        const equipBtn = document.createElement('button'); equipBtn.className='px-2 py-1 bg-sky-500 text-white rounded'; equipBtn.textContent='Gunakan';
+                        equipBtn.addEventListener('click', ()=>{ equipItem(it); });
+                        btnWrap.appendChild(equipBtn);
+                        card.appendChild(btnWrap);
+                        domElements.inventoryList.appendChild(card);
+                    });
+                };
+                window.addEventListener('shop:purchase', onPurchaseInventory);
+                modalCleanupRegistry = modalCleanupRegistry || [];
+                modalCleanupRegistry.push(() => window.removeEventListener('shop:purchase', onPurchaseInventory));
+            } catch(e){}
         }
 
         function equipItem(it) {
             if (!activeUser) return;
+            // Ownership guard: ensure item is actually owned before equipping
+            const isOwned = (activeUser && activeUser.inventory && activeUser.inventory.find(ii => ii.id === it.id && ii.toko === it.toko));
+            if (!isOwned) {
+                // If it's an avatar/unlocked avatar path (unlockedAvatars), allow if present there
+                if (it.toko === 'tokoAvatar' && activeUser.unlockedAvatars && activeUser.unlockedAvatars.includes(it.id)) {
+                    // allow
+                } else {
+                    playSound('wrong'); showMascotTip('Item belum dimiliki. Beli dulu dari toko.'); return;
+                }
+            }
             // simple equip: if it's a customization/theme apply it, if avatar, set avatarId
             if (it.toko === 'tokoAvatar' && it.id) {
                 activeUser.avatarId = it.id; playSound('equip'); showMascotTip('Avatar dipakai!');
@@ -3240,6 +3450,11 @@
             if (activeUser.purchaseHistory.length > 50) activeUser.purchaseHistory.splice(0, activeUser.purchaseHistory.length-50);
             saveData();
             renderPurchaseHistory();
+            try {
+                // dispatch a lightweight event so UI can react (shop, inventory)
+                const ev = new CustomEvent('shop:purchase', { detail: { entry, user: activeUser } });
+                window.dispatchEvent(ev);
+            } catch(e){}
         }
 
         function renderPurchaseHistory() {
@@ -3251,6 +3466,37 @@
                 const div = document.createElement('div'); div.className='py-1 border-b border-gray-200'; div.textContent = `${d} — ${p.entry}`;
                 domElements.purchaseHistoryList.appendChild(div);
             });
+        }
+
+        // --- Test helpers: shop/equip gating smoke test ---
+        function runShopEquipGateTest() {
+            try {
+                const testStoreKey = Object.keys(shopData).find(k => shopData[k] && Object.keys(shopData[k].items||{}).length);
+                if (!testStoreKey) { console.warn('No shop data available for test'); showMascotTip('Test: tidak ada data toko'); return; }
+                const testItemId = Object.keys(shopData[testStoreKey].items)[0];
+                const testItem = shopData[testStoreKey].items[testItemId];
+                const snapshotPoints = activeUser.points;
+                // make sure item is not owned at start
+                activeUser.inventory = activeUser.inventory || [];
+                activeUser.inventory = activeUser.inventory.filter(i => !(i.id === testItemId && i.toko === testStoreKey));
+                saveData();
+                // try to equip (should be rejected)
+                const fakeEl = document.createElement('div');
+                // attempt equip via equipItem path
+                equipItem({ toko: testStoreKey, id: testItemId, item: testItem });
+                // now purchase the item programmatically
+                activeUser.points = (activeUser.points || 0) + (testItem.price || 0);
+                saveData();
+                // simulate click to buy as renderShop would do
+                activeUser.points -= testItem.price;
+                activeUser.inventory.push({ toko: testStoreKey, id: testItemId, item: testItem });
+                recordPurchase(`${testItem.name} (${testStoreKey}) - ${testItem.price} Poin`);
+                saveData();
+                // now try equip again (should succeed)
+                equipItem({ toko: testStoreKey, id: testItemId, item: testItem });
+                showMascotTip('Test beli & pilih item selesai — lihat konsol untuk detail');
+                console.log('runShopEquipGateTest: completed', { testStoreKey, testItemId, inventory: activeUser.inventory });
+            } catch (e) { console.error('runShopEquipGateTest failed', e); showMascotTip('Test gagal — lihat konsol'); }
         }
 
         // autosave indicator heartbeat
@@ -3299,8 +3545,9 @@
                 summary.textContent = `${earnedCount} earned`;
                 titleWrap.appendChild(title); titleWrap.appendChild(summary);
                 group.appendChild(titleWrap);
+                // stacked single-column list for a card-like appearance (matches design)
                 const list = document.createElement('div');
-                list.className = 'grid grid-cols-2 gap-2';
+                list.className = 'grid grid-cols-1 gap-3';
                 // Show definitions and dedupe
                 const defs = (typeof achievementsDefinitions !== 'undefined' && achievementsDefinitions[jenjang]) ? achievementsDefinitions[jenjang] : [];
                 if (defs.length === 0) {
@@ -3310,15 +3557,15 @@
                         const unlocked = Array.isArray(badges[jenjang]) && badges[jenjang].includes(def.id);
                         if (uiFilter === 'locked' && unlocked) return;
                         if (uiFilter === 'unlocked' && !unlocked) return;
-                        const it = document.createElement('div');
-                        it.id = `achievement-${def.id}`;
-                        it.dataset.achievementId = def.id;
-                        it.className = 'achievement-card';
+                    const it = document.createElement('div');
+                    it.id = `achievement-${def.id}`;
+                    it.dataset.achievementId = def.id;
+                    it.className = 'achievement-card p-3';
                         if (!unlocked) it.classList.add('locked');
                         if (unlocked) it.classList.add('unlocked-badge');
                         it.setAttribute('title', def.title + (def.desc ? ' — ' + def.desc : ''));
 
-                        const icon = document.createElement('div'); icon.className = 'achievement-icon'; icon.setAttribute('aria-hidden','true');
+                        const icon = document.createElement('div'); icon.className = 'achievement-icon relative'; icon.setAttribute('aria-hidden','true');
                         // add a subtle left accent on the card to reflect jenjang palette
                         try { const accent = (jenjangPalettes[jenjang] && jenjangPalettes[jenjang][0]) ? jenjangPalettes[jenjang][0] : null; if (accent) it.style.borderLeft = '6px solid '+accent; } catch(e){}
                         // prefer inline SVG provided in definition (trusted), otherwise create a fallback medal/star
@@ -3343,23 +3590,53 @@
 
                         const meta = document.createElement('div'); meta.className = 'achievement-meta';
                         const progressWrap = document.createElement('div'); progressWrap.className = 'achievement-progress';
+                        progressWrap.setAttribute('role','progressbar');
+                        progressWrap.setAttribute('aria-valuemin','0');
+                        progressWrap.setAttribute('aria-valuemax','100');
                         const progInner = document.createElement('i'); progInner.style.width = '0%'; progressWrap.appendChild(progInner);
                         const stateBadge = document.createElement('div'); stateBadge.className = 'achievement-badge'; stateBadge.textContent = unlocked ? '✓' : '';
                         const stateText = document.createElement('div'); stateText.className = 'text-sm text-right text-gray-500'; stateText.textContent = unlocked ? 'Terklaim' : 'Terkunci';
+                        const pctLabel = document.createElement('div'); pctLabel.className = 'achievement-percent text-sm text-gray-600'; pctLabel.textContent = '';
 
                         // try to show progress if measurable and not yet unlocked
-                        if (!unlocked) {
-                            const progress = calculateAchievementProgress(def, jenjang);
-                            if (progress != null) {
-                                progInner.style.width = Math.round(progress*100)+'%';
+                        let progress = null;
+                        try {
+                            if (!unlocked) {
+                                progress = calculateAchievementProgress(def, jenjang);
+                                if (progress != null) {
+                                    const pct = Math.round(Math.min(1, progress) * 100);
+                                    progInner.style.width = pct + '%';
+                                    progressWrap.setAttribute('aria-valuenow', String(pct));
+                                    pctLabel.textContent = pct + '%';
+                                }
+                            } else {
+                                progInner.style.width = '100%';
+                                progressWrap.setAttribute('aria-valuenow', '100');
+                                pctLabel.textContent = '100%';
                             }
-                        } else {
-                            progInner.style.width = '100%';
-                        }
+                        } catch (e) { /* swallow and leave progress hidden */ }
+
+                        // assemble meta (progress + percent + state)
+                        meta.appendChild(progressWrap);
+                        const metaRow = document.createElement('div'); metaRow.className = 'flex items-center justify-between mt-2';
+                        const leftMeta = document.createElement('div'); leftMeta.className = 'flex items-center gap-2'; leftMeta.appendChild(stateBadge);
+                        const rightMeta = document.createElement('div'); rightMeta.className = 'flex items-center gap-2'; rightMeta.appendChild(pctLabel); rightMeta.appendChild(stateText);
+                        metaRow.appendChild(leftMeta); metaRow.appendChild(rightMeta); meta.appendChild(metaRow);
 
                         // assemble (icon + body only for a clean stacked list)
                         it.appendChild(icon);
+                        // body: title, desc, then meta (progress)
+                        body.appendChild(meta);
                         it.appendChild(body);
+                        // state pill (right side)
+                        const pill = document.createElement('div'); pill.className = 'achievement-pill'; pill.textContent = unlocked ? 'Terklaim' : 'Terkunci';
+                        if (unlocked) pill.classList.add('unlocked');
+                        it.appendChild(pill);
+                        // add small check icon overlay when unlocked
+                        if (unlocked) {
+                            const ck = document.createElement('div'); ck.className = 'achievement-check'; ck.innerHTML = '✓';
+                            it.appendChild(ck);
+                        }
                         it.addEventListener('click', ()=>{ if (unlocked) showMascotTip(def.title + ' sudah diklaim'); else showMascotTip('Prestasi: ' + def.title); });
                         list.appendChild(it);
                     });
@@ -3402,25 +3679,123 @@
             try {
                 if (!activeUser) return null;
                 // heuristics: check id for numbers
-                if (/submateri/i.test(def.id)) {
-                    const total = Object.keys(edukasiData[jenjang].dunia).reduce((acc,did)=>acc+Object.keys(edukasiData[jenjang].dunia[did].subMateri).length,0);
+                // progress by submateri targets
+                if (/submateri/i.test(def.id) || /_(\d+)_sub|sub_(\d+)/i.test(def.id)) {
+                    const total = Object.keys((edukasiData[jenjang] && edukasiData[jenjang].dunia)||{}).reduce((acc,did)=>acc+Object.keys(edukasiData[jenjang].dunia[did].subMateri).length,0);
                     const done = Object.values((activeUser.progress && activeUser.progress[jenjang])||{}).reduce((acc,cur)=>acc + (Object.values(cur).filter(p=>p.done).length||0),0);
-                    return total ? Math.min(1, done/Math.max(1, parseInt(def.id.match(/(\d+)/)?.[0]||total))) : null;
+                    const target = parseInt(def.id.match(/(\d+)/)?.[0]||total);
+                    return total ? Math.min(1, done/Math.max(1, target)) : null;
                 }
+
+                // progress by points
                 if (/points|poin|point/i.test(def.id)) {
                     const target = parseInt(def.id.match(/(\d+)/)?.[0]||0);
                     return target ? Math.min(1, (activeUser.points||0)/target) : null;
                 }
-                if (/dunia/i.test(def.id)) {
-                    // count complete dunia
-                    const totalD = Object.keys(edukasiData[jenjang].dunia).length;
-                    let c=0; for (const d in edukasiData[jenjang].dunia){ const total=Object.keys(edukasiData[jenjang].dunia[d].subMateri).length; const done=Object.values((activeUser.progress&&activeUser.progress[jenjang]&&activeUser.progress[jenjang][d])||{}).filter(p=>p.done).length; if(done===total) c++; }
+
+                // progress by completed worlds (dunia)
+                if (/dunia|world/i.test(def.id)) {
+                    const totalD = Object.keys((edukasiData[jenjang] && edukasiData[jenjang].dunia)||{}).length || 0;
+                    let c=0; for (const d in (edukasiData[jenjang] && edukasiData[jenjang].dunia)||{}){ const total=Object.keys(edukasiData[jenjang].dunia[d].subMateri).length; const done=Object.values((activeUser.progress&&activeUser.progress[jenjang]&&activeUser.progress[jenjang][d])||{}).filter(p=>p.done).length; if(done===total) c++; }
                     const target = parseInt(def.id.match(/(\d+)/)?.[0]||1);
-                    return totalD ? Math.min(1, c/target) : null;
+                    return totalD && target ? Math.min(1, c/target) : null;
+                }
+
+                // favorites
+                if (/favorite|favorit/i.test(def.id)) {
+                    const need = parseInt(def.id.match(/(\d+)/)?.[0]||1);
+                    const cur = (activeUser.favorites && activeUser.favorites.length) || 0;
+                    return need ? Math.min(1, cur/need) : null;
+                }
+
+                // quizzes / correct answers
+                if (/quiz|kuis|quizzes/i.test(def.id)) {
+                    const need = parseInt(def.id.match(/(\d+)/)?.[0]||0);
+                    const cur = (activeUser.stats && (activeUser.stats.quizzesCompleted||0)) || 0;
+                    return need ? Math.min(1, cur/need) : null;
+                }
+                if (/correct|benar/i.test(def.id) || /correctAnswers/i.test(def.id)) {
+                    const need = parseInt(def.id.match(/(\d+)/)?.[0]||0);
+                    const cur = (activeUser.stats && (activeUser.stats.correctAnswers||0)) || 0;
+                    return need ? Math.min(1, cur/need) : null;
+                }
+
+                // login streak
+                if (/login|hari|beruntut/i.test(def.id)) {
+                    const need = parseInt(def.id.match(/(\d+)/)?.[0]||0);
+                    const cur = activeUser.loginStreak || 0;
+                    return need ? Math.min(1, cur/need) : null;
                 }
             } catch (e) { return null; }
             return null;
         }
+
+            // === Debug helper: smoke test achievements in the browser console ===
+            // Usage: runAchievementsSmokeTest()  or runAchievementsSmokeTest({ persist: true })
+            function runAchievementsSmokeTest(options = {}) {
+                options = options || {};
+                if (!window.activeUser) { console.warn('runAchievementsSmokeTest: no activeUser available'); return; }
+                const jen = activeUser.jenjang || 'sd';
+                console.log('runAchievementsSmokeTest: starting for jenjang=', jen);
+                // backup user state
+                const backup = JSON.parse(JSON.stringify(activeUser));
+
+                // inject sample progress & stats to trigger several achievements
+                activeUser.points = Math.max(activeUser.points||0, 2000);
+                activeUser.stats = activeUser.stats || {};
+                activeUser.stats.quizzesCompleted = Math.max(activeUser.stats.quizzesCompleted||0, 30);
+                activeUser.stats.correctAnswers = Math.max(activeUser.stats.correctAnswers||0, 200);
+                activeUser.favorites = activeUser.favorites || [];
+                while (activeUser.favorites.length < 6) activeUser.favorites.push('fav-'+activeUser.favorites.length);
+                activeUser.loginStreak = Math.max(activeUser.loginStreak||0, 10);
+
+                // mark a few submateri done in each dunia for the active jenjang
+                activeUser.progress = activeUser.progress || {};
+                activeUser.progress[jen] = activeUser.progress[jen] || {};
+                for (const d in ((edukasiData[jen] && edukasiData[jen].dunia) || {})) {
+                    activeUser.progress[jen][d] = activeUser.progress[jen][d] || {};
+                    let i = 0;
+                    for (const sm in edukasiData[jen].dunia[d].subMateri) {
+                        activeUser.progress[jen][d][sm] = { done: true, completedAt: Date.now() - (i*1000) };
+                        i++; if (i>=3) break; // mark first 3 per dunia
+                    }
+                }
+
+                saveData();
+                // re-render achievements so progress bars update
+                try { renderAchievements(jen); } catch(e){ console.warn('renderAchievements failed', e); }
+
+                // force-award a handful of sample achievements for visibility
+                const defs = (achievementsDefinitions && achievementsDefinitions[jen]) || [];
+                const sampleIds = defs.slice(0, 6).map(d=>d.id);
+                console.log('runAchievementsSmokeTest: force-awarding sample ids:', sampleIds);
+                sampleIds.forEach(id => { try { forceAwardAchievement(id, jen); } catch(e){ console.warn('forceAward failed for', id, e); } });
+
+                // allow animations to settle then verify DOM and badges
+                setTimeout(() => {
+                    console.log('runAchievementsSmokeTest: verification:');
+                    sampleIds.forEach(id => {
+                        const el = document.getElementById('achievement-'+id);
+                        const domUnlocked = !!(el && (el.classList.contains('unlocked') || el.classList.contains('unlocked-badge') || el.classList.contains('achievement-complete')));
+                        const badgeList = (activeUser.badges && activeUser.badges[jen]) || [];
+                        const recorded = badgeList.includes(id);
+                        const pass = domUnlocked || recorded;
+                        console.log(id + ':', pass ? 'PASS' : 'FAIL', { dom: el ? el.className : null, recorded });
+                    });
+
+                    // restore prior state unless persist true
+                    if (!options.persist) {
+                        Object.keys(activeUser).forEach(k => delete activeUser[k]);
+                        Object.assign(activeUser, backup);
+                        saveData();
+                        try { renderAchievements(jen); } catch(e){}
+                        console.log('runAchievementsSmokeTest: restored previous user state (persist=false)');
+                    } else {
+                        console.log('runAchievementsSmokeTest: changes persisted (persist=true)');
+                    }
+                }, 900);
+                window.runAchievementsSmokeTest = runAchievementsSmokeTest;
+            }
 
         // Render and manage daily mission UI
         function renderDailyMission() {
