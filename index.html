@@ -153,12 +153,72 @@
 
         .confetti-piece { position: fixed; width: 10px; height: 14px; opacity: 0.95; z-index: 1000; transform: translateY(0) rotate(0); animation: confetti-fall 1800ms linear forwards; }
         @keyframes confetti-fall { to { transform: translateY(120vh) rotate(720deg); opacity: 0; } }
+        
+        /* --- [BARU] Gaya untuk Layar Mulai --- */
+        #start-screen .content-wrapper {
+            position: relative;
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            text-align: center;
+        }
+
+        .floating-shape {
+            position: absolute;
+            opacity: 0.5;
+            animation: float-around 15s ease-in-out infinite;
+            filter: blur(2px);
+        }
+        .shape1 { top: 10%; left: 15%; width: 80px; height: 80px; animation-duration: 12s; }
+        .shape2 { top: 70%; left: 80%; width: 50px; height: 50px; animation-duration: 18s; }
+        .shape3 { top: 80%; left: 10%; width: 60px; height: 60px; animation-duration: 14s; }
+        .shape4 { top: 20%; left: 75%; width: 40px; height: 40px; animation-duration: 20s; }
+
+        @keyframes float-around {
+            0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+            50% { transform: translateY(-30px) rotate(180deg) scale(1.1); }
+        }
+
+        #start-game-btn {
+            animation: pulse-button 2s infinite;
+            transition: all 0.3s cubic-bezier(.25,.8,.25,1);
+        }
+        #start-game-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+        }
+        @keyframes pulse-button {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 20px rgba(251, 191, 36, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+        }
+
+        .screen.fade-out {
+            animation: fadeOut 0.5s ease-out forwards;
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
 
     </style>
 </head>
-<body class="antialiased">
+<body>
+  <!-- Background music: file placed in background_music/ -->
+  <!-- Audio will start only after user presses the 'Mulai' button (user gesture) -->
+  <audio id="background-music" loop preload="auto">
+    <source src="background_music/Learning Quest Melody.mp3" type="audio/mpeg">
+    Your browser does not support the audio element.
+  </audio>
 
-    <!-- Splash Screen -->
+    <!-- Small mute/unmute toggle in corner (hidden until music started) -->
+  <button id="mute-btn" style="position:fixed;bottom:12px;right:12px;padding:8px 12px;border-radius:6px;border:none;background:#0b79f7;color:#fff;cursor:pointer;z-index:9999;display:none;">Mute</button>
+    <!-- small inline start button removed; audio will be started by the big Start button -->
+
+  <!-- Splash Screen -->
     <div id="splash-screen">
         <svg id="splash-logo" width="120" height="120" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
             <defs>
@@ -184,6 +244,24 @@
 
     <div id="app-container" class="min-h-screen flex flex-col items-center justify-center p-4 overflow-hidden">
         
+        <!-- ===== [BARU] Layar Mulai ===== -->
+        <div id="start-screen" class="screen flex-col w-full h-full items-center justify-center text-center relative overflow-hidden">
+            <!-- Elemen dekoratif yang melayang -->
+            <svg class="floating-shape shape1" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><path d="M50 0 L61.2 34.5 L97.5 34.5 L68.1 55.9 L79.4 90.5 L50 69.1 L20.6 90.5 L31.9 55.9 L2.5 34.5 L38.8 34.5 Z" fill="#FBBF24"/></svg>
+            <svg class="floating-shape shape2" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="50" fill="#34D399"/></svg>
+            <svg class="floating-shape shape3" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" rx="20" fill="#A78BFA" transform="rotate(45 50 50)"/></svg>
+            <svg class="floating-shape shape4" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="50,0 100,100 0,100" fill="#F472B6"/></svg>
+        
+            <div class="content-wrapper z-10">
+                <div id="start-screen-mascot" class="w-32 h-32 mx-auto mb-4">
+                    <!-- Maskot akan dimasukkan di sini oleh JavaScript -->
+                </div>
+                <h1 class="font-brand text-4xl md:text-5xl text-white mb-4" style="text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">Petualangan Belajar Menantimu!</h1>
+                <p class="text-white/80 text-lg mb-8">Tekan mulai untuk masuk</p>
+                <button id="start-game-btn" class="w-full max-w-xs bg-amber-400 hover:bg-amber-500 text-sky-900 font-bold py-4 px-8 rounded-full shadow-lg text-2xl">Mulai</button>
+            </div>
+        </div>
+
         <!-- ===== SCREENS ===== -->
         <div id="entry-screen" class="screen flex-col w-full max-w-md text-center">
             <h1 class="font-brand text-5xl md:text-7xl text-white mb-2">Selamat Datang di</h1>
@@ -252,11 +330,14 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2 flex-wrap justify-center">
-                   <button id="shop-hub-btn" class="bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">🛍️ Toko</button>
+                 <button id="shop-hub-btn" class="bg-violet-500 hover:bg-violet-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">🛍️ Toko</button>
                    <button id="daily-mission-btn" class="bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">🎯 Misi</button>
                    <button id="leaderboard-btn" class="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">🥇 Peringkat</button>
                    <button id="achievements-btn" class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">🏆 Prestasi</button>
                    <button id="content-creator-btn" class="hidden bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">➕ Kelola Materi</button>
+                       <div class="relative">
+                           <input id="world-search-input" class="hidden md:inline-block p-2 rounded-lg border-2" placeholder="Cari Dunia..." />
+                       </div>
                    <button id="settings-btn" class="bg-gray-700 hover:bg-gray-800 text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-transform hover:scale-105">⚙️</button>
                 </div>
             </header>
@@ -318,11 +399,26 @@
     <div id="shop-hub-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 items-center justify-center p-4 z-50">
         <div class="modal-content p-8 shadow-2xl w-full max-w-2xl rounded-2xl" style="background-color: var(--modal-bg-color);">
             <h3 class="font-brand text-4xl text-violet-600 text-center mb-6">Pusat Perbelanjaan</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-center">
-                <div id="open-avatar-shop" class="p-6 bg-rose-100 rounded-2xl cursor-pointer card-hover border-2 border-rose-300">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div data-shop="tokoAvatar" class="open-shop p-6 bg-rose-100 rounded-2xl cursor-pointer card-hover border-2 border-rose-300">
                     <div class="text-5xl mb-2">👕</div>
                     <h4 class="font-bold text-xl text-rose-800">Toko Avatar</h4>
                     <p class="text-sm text-rose-600">Ganti penampilanmu!</p>
+                </div>
+                <div data-shop="tokoPeningkatan" class="open-shop p-6 bg-emerald-100 rounded-2xl cursor-pointer card-hover border-2 border-emerald-300">
+                    <div class="text-5xl mb-2">🔧</div>
+                    <h4 class="font-bold text-xl text-emerald-800">Toko Peningkatan</h4>
+                    <p class="text-sm text-emerald-600">Item bantu belajar & kosmetik.</p>
+                </div>
+                <div data-shop="tokoKoin" class="open-shop p-6 bg-indigo-100 rounded-2xl cursor-pointer card-hover border-2 border-indigo-300">
+                    <div class="text-5xl mb-2">💎</div>
+                    <h4 class="font-bold text-xl text-indigo-800">Tukar Koin</h4>
+                    <p class="text-sm text-indigo-600">Tukarkan poin dengan koin & hadiah.</p>
+                </div>
+                <div data-shop="tokoBurungHantu" class="open-shop p-6 bg-sky-100 rounded-2xl cursor-pointer card-hover border-2 border-sky-300">
+                    <div class="text-5xl mb-2">🦉</div>
+                    <h4 class="font-bold text-xl text-sky-800">Toko Burung Hantu</h4>
+                    <p class="text-sm text-sky-600">Peralatan spesial & kosmetik langka.</p>
                 </div>
             </div>
             <button id="close-shop-hub-btn" class="mt-8 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full w-full">Tutup</button>
@@ -335,8 +431,25 @@
                 <h3 class="font-brand text-3xl text-violet-600">👕 Toko Avatar 👕</h3>
                 <div class="font-bold text-amber-600 text-xl bg-amber-100 px-4 py-2 rounded-full" id="shop-points-display"></div>
             </div>
-            <div id="avatar-shop-container" class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-6 max-h-80 overflow-y-auto p-4 rounded-lg" style="background-color: var(--bg-color);"></div>
+            <div id="generic-shop-tabs" class="flex gap-2 mb-4">
+                <button data-tab="items" class="px-3 py-2 rounded bg-gray-200">Item</button>
+                <button data-tab="info" class="px-3 py-2 rounded bg-gray-100">Info</button>
+            </div>
+            <div id="avatar-shop-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-80 overflow-y-auto p-4 rounded-lg" style="background-color: var(--bg-color);"></div>
+            <div id="shop-footer-info" class="text-sm text-gray-600 mt-4"></div>
             <button id="close-avatar-shop-btn" class="mt-6 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded-full w-full">Tutup</button>
+        </div>
+    </div>
+
+    <!-- Generic Shop Modal -->
+    <div id="generic-shop-modal" class="modal-overlay fixed inset-0 bg-black bg-opacity-70 items-center justify-center p-4 z-50">
+        <div class="modal-content p-6 shadow-2xl w-full max-w-4xl rounded-2xl" style="background-color: var(--modal-bg-color);">
+            <div class="flex justify-between items-center mb-4">
+                <h3 id="generic-shop-title" class="font-brand text-3xl text-sky-800">Toko</h3>
+                <div id="generic-shop-balance" class="font-bold text-amber-600 text-lg"></div>
+            </div>
+            <div id="generic-shop-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-h-96 overflow-y-auto p-2 rounded-lg" style="background-color: var(--bg-color);"></div>
+            <div class="mt-4 flex gap-2"><button id="generic-shop-close" class="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">Tutup</button></div>
         </div>
     </div>
 
@@ -396,6 +509,11 @@
             </div>
            
             <form id="content-creator-form" class="space-y-4">
+                <div id="creator-existing" class="p-4 border rounded-lg bg-gray-50">
+                    <h4 class="font-bold text-lg mb-2 text-sky-700">Edit Submateri yang Ada</h4>
+                    <p class="text-sm text-gray-600 mb-2">Pilih dunia di bawah, lalu pilih submateri untuk diedit atau dihapus.</p>
+                    <div id="existing-list" class="max-h-40 overflow-y-auto grid grid-cols-1 gap-2"></div>
+                </div>
                 <div class="p-4 border rounded-lg bg-gray-50">
                     <h4 class="font-bold text-lg mb-2 text-sky-700">1. Pilih atau Buat Dunia Baru</h4>
                     <select id="dunia-select" class="mt-1 block w-full p-2 border rounded-md mb-3"></select>
@@ -420,12 +538,8 @@
                 <div class="p-4 border rounded-lg bg-gray-50">
                     <h4 class="font-bold text-lg mb-2 text-sky-700">3. Buat Kuis</h4>
                     <div class="space-y-2">
-                        <textarea id="kuis-pertanyaan" rows="2" placeholder="Pertanyaan kuis" class="w-full p-2 border rounded" required></textarea>
-                        <input type="text" id="kuis-pilihan1" placeholder="Jawaban Benar" class="w-full p-2 border rounded bg-green-100" required>
-                        <input type="text" id="kuis-pilihan2" placeholder="Pilihan Salah 1" class="w-full p-2 border rounded" required>
-                        <input type="text" id="kuis-pilihan3" placeholder="Pilihan Salah 2" class="w-full p-2 border rounded">
-                        <input type="text" id="kuis-pilihan4" placeholder="Pilihan Salah 3" class="w-full p-2 border rounded">
-                        <input type="text" id="kuis-hint" placeholder="Petunjuk (opsional)" class="w-full p-2 border rounded">
+                        <!-- multi-kuis container will be injected here -->
+                        <div id="kuis-multi-container-area"></div>
                     </div>
                 </div>
                  <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg">Simpan Materi</button>
@@ -440,6 +554,83 @@
 
     <script>
         // --- DATA APLIKASI ---
+        // --- AUDIO HELPERS (playlist start, fade-in, mute) ---
+        (function(){
+            const audioEl = document.getElementById('background-music');
+            const muteBtn = document.getElementById('mute-btn');
+
+            // Playlist (order matters) - uses files in /background_music
+            const playlist = [
+                'background_music/Learning Quest Melody.mp3',
+                'background_music/The Learning Quest.mp3'
+            ];
+            let currentIndex = 0;
+            let fadeTimer = null;
+
+            function fadeInAudio(targetVolume = 0.8, duration = 1200) {
+                try {
+                    if (!audioEl) return;
+                    audioEl.volume = 0;
+                    audioEl.muted = false;
+                    const steps = 30;
+                    const stepTime = Math.max(10, Math.floor(duration / steps));
+                    let step = 0;
+                    if (fadeTimer) clearInterval(fadeTimer);
+                    fadeTimer = setInterval(() => {
+                        step++;
+                        audioEl.volume = Math.min(targetVolume, (targetVolume * step) / steps);
+                        if (step >= steps) { clearInterval(fadeTimer); fadeTimer = null; }
+                    }, stepTime);
+                } catch(e) { console.warn('fadeInAudio error', e); }
+            }
+
+            function setTrack(index) {
+                if (!audioEl) return;
+                currentIndex = index % playlist.length;
+                // update src and load
+                try {
+                    audioEl.src = playlist[currentIndex];
+                    audioEl.load();
+                } catch(e) { console.warn('setTrack error', e); }
+            }
+
+            // play current track (called within user gesture)
+            window.startBackgroundMusic = function(){
+                if (!audioEl) return;
+                // ensure track is set
+                setTrack(currentIndex);
+                audioEl.loop = false; // we handle playlist looping
+                audioEl.play().then(()=>{
+                    fadeInAudio(0.8, 800);
+                    if (muteBtn) { muteBtn.style.display = 'inline-block'; muteBtn.textContent = audioEl.muted ? 'Unmute' : 'Mute'; }
+                }).catch(err => console.warn('background music play failed:', err));
+            };
+
+            // When a track ends, advance to next and play (with fade)
+            if (audioEl) {
+                audioEl.addEventListener('ended', () => {
+                    currentIndex = (currentIndex + 1) % playlist.length;
+                    setTrack(currentIndex);
+                    // small delay to ensure load
+                    setTimeout(() => {
+                        audioEl.play().then(()=> fadeInAudio(0.8, 700)).catch(()=>{});
+                    }, 150);
+                });
+            }
+
+            // mute toggle safe binding
+            if (muteBtn) {
+                muteBtn.addEventListener('click', () => {
+                    try {
+                        audioEl.muted = !audioEl.muted;
+                        muteBtn.textContent = audioEl.muted ? 'Unmute' : 'Mute';
+                    } catch(e) {}
+                });
+            }
+
+            // Initialize src to first track (do not autoplay)
+            try { setTrack(0); } catch(e){}
+        })();
         const avatarData = {
             'avatar1': { svg: `<svg viewBox="0 0 36 36" fill="none" role="img" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><mask id="mask__beam" maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36"><rect width="36" height="36" fill="#FFFFFF" rx="72"></rect></mask><g mask="url(#mask__beam)"><rect width="36" height="36" fill="#75d475"></rect><rect x="0" y="0" width="36" height="36" transform="translate(4 4) rotate(268 18 18) scale(1.2)" fill="#248038" rx="36"></rect><g transform="translate(-4 -1) rotate(8 18 18)"><path d="M15 21c2 1 4 1 6 0" stroke="#000000" fill="none" stroke-linecap="round"></path><rect x="10" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#000000"></rect><rect x="24" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#000000"></rect></g></g></svg>`, isStarter: true },
             'avatar2': { svg: `<svg viewBox="0 0 36 36" fill="none" role="img" xmlns="http://www.w3.org/2000/svg" width="80" height="80"><mask id="mask__beam" maskUnits="userSpaceOnUse" x="0" y="0" width="36" height="36"><rect width="36" height="36" fill="#FFFFFF" rx="72"></rect></mask><g mask="url(#mask__beam)"><rect width="36" height="36" fill="#84b6e0"></rect><rect x="0" y="0" width="36" height="36" transform="translate(0 0) rotate(329 18 18) scale(1.2)" fill="#25648a" rx="36"></rect><g transform="translate(0 5) rotate(-9 18 18)"><path d="M15 21c2 1 4 1 6 0" stroke="#FFFFFF" fill="none" stroke-linecap="round"></path><rect x="14" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#FFFFFF"></rect><rect x="20" y="14" width="1.5" height="2" rx="1" stroke="none" fill="#FFFFFF"></rect></g></g></svg>`, isStarter: true },
@@ -459,6 +650,26 @@
                 }
             }
         };
+        // Add two more shops (four shops total)
+        shopData.tokoPeningkatan = { title: "Toko Peningkatan", items: {} };
+        shopData.tokoKoin = { title: "Tukar Koin", items: {} };
+        shopData.tokoBurungHantu = { title: "Toko Burung Hantu", items: {} };
+        shopData.tokoBonus = { title: "Toko Bonus", items: {} };
+        // Add 3 more shops with 10 items each
+        shopData.tokoPeningkatan = { title: "Toko Peningkatan", items: {} };
+        shopData.tokoKoin = { title: "Tukar Koin", items: {} };
+        // helper to create items
+        function addShopItems(shopObj, prefix, emojiBase) {
+            for (let i=1;i<=10;i++) {
+                const id = `${prefix}_${i}`;
+                shopObj.items[id] = { name: `${emojiBase} Item ${i}`, price: 25 * i, desc: `Deskripsi singkat untuk Item ${i}` };
+            }
+        }
+        addShopItems(shopData.tokoPeningkatan, 'boost', '✨');
+        addShopItems(shopData.tokoKoin, 'koin', '💠');
+        // populate burunghantu and bonus shops with themed items
+        addShopItems(shopData.tokoBurungHantu, 'owl', '🦉');
+        addShopItems(shopData.tokoBonus, 'bonus', '🎁');
 
         const mascotSVG = `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><g><path d="M50,15 C25,15 10,35 10,55 C10,80 25,95 50,95 C75,95 90,80 90,55 C90,35 75,15 50,15 Z" fill="#A0522D"/><path d="M35,45 C40,40 50,40 55,45 C60,50 60,60 55,65 L45,65 C40,60 40,50 35,45 Z" fill="#8B4513" transform="translate(-15, 0)"/><path d="M65,45 C60,40 50,40 45,45 C40,50 40,60 45,65 L55,65 C60,60 60,50 65,45 Z" fill="#8B4513" transform="translate(15, 0)"/><circle cx="32" cy="52" r="18" fill="white"/><circle cx="68" cy="52" r="18" fill="white"/><circle cx="33" cy="53" r="8" fill="black"/><circle cx="67" cy="53" r="8" fill="black"/><path d="M50,65 C55,75 45,75 50,65 L52,70 L48,70 Z" fill="#FFC107"/><path d="M20,15 Q30,5 40,15" stroke="#8B4513" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M80,15 Q70,5 60,15" stroke="#8B4513" stroke-width="4" fill="none" stroke-linecap="round"/></g></svg>`;
 
@@ -642,8 +853,70 @@
             if (screen) screen.classList.add('active'); 
         }
 
-        function showModal(id) { document.getElementById(id)?.classList.add('active'); }
-        function hideModals() { domElements.modals.forEach(m => m.classList.remove('active')); }
+    function showModal(id) { document.getElementById(id)?.classList.add('active'); }
+    function hideModals() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active')); }
+
+        // Generic shop functions
+        function openGenericShop(shopId) {
+            if (!activeUser) { showMascotTip('Silakan pilih pengguna terlebih dahulu.'); return; }
+            const shop = shopData[shopId];
+            if (!shop) return;
+            document.getElementById('generic-shop-title').textContent = shop.title;
+            document.getElementById('generic-shop-balance').textContent = `Poin: ${activeUser.points}`;
+            renderShopItems(shopId);
+            showModal('generic-shop-modal');
+        }
+
+        function renderShopItems(shopId) {
+            const grid = document.getElementById('generic-shop-grid');
+            grid.innerHTML = '';
+            const shop = shopData[shopId];
+            Object.keys(shop.items).forEach(key => {
+                const it = shop.items[key];
+                const card = document.createElement('div');
+                card.className = 'p-3 rounded-lg bg-white/80 border shadow text-center';
+                card.innerHTML = `<div class="text-3xl mb-2">${it.icon||'🎁'}</div><div class="font-semibold">${it.name}</div><div class="text-sm text-gray-600">${it.desc||''}</div><div class="mt-2 font-bold">${it.price} Poin</div>`;
+                const btn = document.createElement('button'); btn.className='mt-2 w-full bg-amber-500 hover:bg-amber-600 text-white py-2 rounded'; btn.textContent='Beli';
+                btn.addEventListener('click', () => purchaseItem(shopId, key));
+                card.appendChild(btn);
+                grid.appendChild(card);
+            });
+        }
+
+        function purchaseItem(shopId, itemId) {
+            if (!activeUser) { showMascotTip('Pilih pengguna dulu.'); return; }
+            const shop = shopData[shopId];
+            const item = shop.items[itemId];
+            if (!item) return;
+            if ((activeUser.points || 0) >= item.price) {
+                activeUser.points -= item.price;
+                // special handling for avatars
+                if (shopId === 'tokoAvatar') {
+                    activeUser.unlockedAvatars = activeUser.unlockedAvatars || [];
+                    if (!activeUser.unlockedAvatars.includes(itemId)) activeUser.unlockedAvatars.push(itemId);
+                } else {
+                    // add to inventory
+                    activeUser.inventory = activeUser.inventory || {};
+                    activeUser.inventory[itemId] = (activeUser.inventory[itemId] || 0) + 1;
+                }
+                saveData();
+                playSound('purchase');
+                showMascotTip(`${item.name} berhasil dibeli!`);
+                try { updateMissionProgress(1, { purchased: true, shopId, itemId }); } catch(e) {}
+                document.getElementById('generic-shop-balance').textContent = `Poin: ${activeUser.points}`;
+                renderShopItems(shopId);
+                renderDailyMission();
+            } else { playSound('wrong'); showMascotTip('Poin tidak cukup.'); }
+        }
+
+        // Wire shop hub buttons
+        document.querySelectorAll('.open-shop').forEach(el => {
+            el.addEventListener('click', () => {
+                const shopId = el.dataset.shop;
+                openGenericShop(shopId);
+            });
+        });
+        document.getElementById('generic-shop-close').addEventListener('click', hideModals);
 
         function createNewUser(name, avatarId, role) {
             const starterAvatars = Object.keys(avatarData).filter(id => avatarData[id].isStarter);
@@ -734,6 +1007,8 @@
             showAnimation(`+${amount}`, 'point');
             saveData();
             updateUI();
+            // update daily mission if it's a points-collection mission
+            try { updateMissionProgress(amount); } catch(e){}
             checkForBadges();
         }
 
@@ -810,10 +1085,20 @@
                 card.addEventListener('click', () => {
                     playSound('click');
                     currentDuniaId = duniaId;
+                    try { updateMissionProgress(0, { duniaId }); } catch(e) {}
                     renderSubMateri(duniaId);
                     switchScreen('submateri-screen');
                 });
                 domElements.duniaContainer.appendChild(card);
+            }
+            // apply search filter if present
+            const search = document.getElementById('world-search-input');
+            if (search && search.value.trim()) {
+                const q = search.value.trim().toLowerCase();
+                Array.from(domElements.duniaContainer.children).forEach(card => {
+                    const title = card.querySelector('.font-brand')?.textContent?.toLowerCase() || '';
+                    if (!title.includes(q)) card.style.display = 'none';
+                });
             }
         }
         
@@ -926,6 +1211,35 @@
                 domElements.duniaSelect.appendChild(option);
             }
         }
+
+        // Import / Export & Reset helpers
+        function exportData() {
+            const payload = { users: userProfiles, edu: edukasiData };
+            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = 'questoria-export.json'; a.click(); URL.revokeObjectURL(url);
+        }
+
+        function importData(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed.users) userProfiles = parsed.users;
+                    if (parsed.edu) edukasiData = parsed.edu;
+                    saveData();
+                    showMascotTip('Data berhasil diimpor.');
+                    renderDuniaMap();
+                } catch (err) { alert('File tidak valid.'); }
+            };
+            reader.readAsText(file);
+        }
+
+        function resetAllAchievements() {
+            userProfiles.forEach(u => { u.badges = {}; });
+            saveData();
+            showMascotTip('Semua prestasi direset.');
+        }
         
         function showAnimation(text, type = 'point') {
             const animEl = document.createElement('div');
@@ -1004,19 +1318,38 @@
         }
         
         function generateDailyMission() {
-            if (!activeUser || (activeUser.dailyMission && !activeUser.dailyMission.claimed)) return;
-            const missions = [
-                { id: 'm1', text: 'Selesaikan 2 kuis', goal: 2, reward: 30 },
-                { id: 'm2', text: 'Selesaikan 5 kuis', goal: 5, reward: 75 },
+            if (!activeUser) return;
+            // If mission exists and not claimed, keep it for the day
+            if (activeUser.dailyMission && !activeUser.dailyMission.claimed) return;
+
+            const templates = [
+                { type: 'kuis', text: 'Selesaikan 2 kuis', goal: 2, reward: 30 },
+                { type: 'kuis', text: 'Selesaikan 5 kuis', goal: 5, reward: 75 },
+                { type: 'points', text: 'Kumpulkan 100 poin', goal: 100, reward: 50 },
+                { type: 'visit', text: 'Kunjungi 3 dunia berbeda', goal: 3, reward: 40 },
+                { type: 'shop', text: 'Beli 1 item di toko', goal: 1, reward: 60 },
             ];
-            const choice = missions[Math.floor(Math.random()*missions.length)];
-            activeUser.dailyMission = { ...choice, progress: 0, claimed: false };
+
+            const choice = templates[Math.floor(Math.random() * templates.length)];
+            activeUser.dailyMission = { ...choice, progress: 0, claimed: false, createdAt: new Date().toDateString() };
             saveData();
         }
 
         function renderDailyMission() {
             const m = activeUser.dailyMission;
-            if (!m) return;
+            if (!m) {
+                domElements.dailyMissionText.textContent = '';
+                domElements.missionProgressBar.style.width = '0%';
+                domElements.missionProgressBar.textContent = `0%`;
+                domElements.claimMissionRewardBtn.disabled = true;
+                return;
+            }
+            // Validate mission fields; if missing, regenerate
+            if (typeof m.text === 'undefined' || typeof m.goal === 'undefined') {
+                console.warn('Invalid dailyMission structure, regenerating');
+                generateDailyMission();
+                return renderDailyMission();
+            }
             domElements.dailyMissionText.textContent = `${m.text} (${m.progress}/${m.goal})`;
             const pct = Math.min(100, (m.progress / m.goal) * 100);
             domElements.missionProgressBar.style.width = `${pct}%`;
@@ -1024,15 +1357,34 @@
             domElements.claimMissionRewardBtn.disabled = !(m.progress >= m.goal && !m.claimed);
         }
 
-        function updateMissionProgress(amount) {
+        function updateMissionProgress(amount, meta) {
             const m = activeUser.dailyMission;
-            if (m && !m.claimed) {
+            if (!m || m.claimed) return;
+
+            // Support different mission types
+            if (m.type === 'kuis') {
                 m.progress = (m.progress || 0) + amount;
-                if (m.progress >= m.goal) {
-                    showMascotTip("Misi harian selesai!");
-                }
-                saveData();
+            } else if (m.type === 'points') {
+                // amount is points gained
+                m.progress = (m.progress || 0) + amount;
+            } else if (m.type === 'visit') {
+                // meta should carry duniaId to count unique visits
+                m._visited = m._visited || new Set();
+                if (meta && meta.duniaId) m._visited.add(meta.duniaId);
+                m.progress = m._visited.size;
+            } else if (m.type === 'shop') {
+                // meta can indicate a purchase
+                if (meta && meta.purchased) m.progress = (m.progress || 0) + 1;
             }
+
+            if (m.progress >= m.goal) {
+                m.progress = m.goal;
+                showMascotTip('Misi harian selesai! Klaim hadiahnya.');
+                spawnConfetti(20);
+            }
+
+            saveData();
+            renderDailyMission();
         }
 
         function applySettings() {
@@ -1051,14 +1403,49 @@
                 domElements.splashScreen.style.opacity = '0';
                 setTimeout(() => {
                     domElements.splashScreen.style.display = 'none';
-                    if (loadData()) { 
-                       switchScreen('entry-screen');
-                    } else { 
-                        switchScreen('entry-screen'); 
+                    loadData(); // Memuat data
+                    
+                    // Menambahkan maskot ke layar mulai
+                    const startScreenMascotContainer = document.getElementById('start-screen-mascot');
+                    if(startScreenMascotContainer) {
+                        startScreenMascotContainer.innerHTML = mascotSVG;
                     }
+                    
+                    // [MODIFIKASI] Menampilkan layar mulai yang baru terlebih dahulu
+                    switchScreen('start-screen'); 
+
                 }, 700);
             }, 4000);
         }
+
+        // Safe Tone start: resume on user gesture if needed
+        document.addEventListener('click', ()=>{
+            try { if (Tone && Tone.context && Tone.context.state !== 'running') Tone.start(); } catch(e){}
+        }, { once: true });
+
+        // [BARU] Listener untuk tombol Mulai yang baru
+        document.getElementById('start-game-btn').addEventListener('click', () => {
+            playSound('click');
+            if (window.startBackgroundMusic) {
+                window.startBackgroundMusic();
+            }
+            
+            const startScreen = document.getElementById('start-screen');
+            startScreen.classList.add('fade-out');
+
+            setTimeout(() => {
+                // Cek jika ada profil pengguna atau tidak
+                if (userProfiles.length > 0) {
+                    switchScreen('entry-screen'); // Tampilkan pilihan login/register seperti di foto
+                } else {
+                    // Langsung ke layar pendaftaran jika belum ada pengguna
+                    showMascotTip("Selamat datang! Yuk, buat akun barumu dulu.");
+                    switchScreen('role-screen');
+                }
+                startScreen.classList.remove('fade-out'); // Reset class untuk nanti
+            }, 500); // Sesuaikan dengan durasi animasi fadeOut
+        });
+
 
         // Alur Masuk & Pendaftaran
         domElements.loginBtn.addEventListener('click', () => {
@@ -1098,25 +1485,28 @@
         // Tombol Header
         domElements.shopHubBtn.addEventListener('click', () => { showModal('shop-hub-modal'); });
         document.getElementById('close-shop-hub-btn').addEventListener('click', hideModals);
-        document.getElementById('open-avatar-shop').addEventListener('click', () => {
+        document.querySelector('[data-shop="tokoAvatar"]')?.addEventListener('click', () => {
+             if (!activeUser) { showMascotTip('Pilih pengguna terlebih dahulu.'); return; }
              domElements.shopPointsDisplay.textContent = `${activeUser.points} Poin`;
              domElements.avatarShopContainer.innerHTML = '';
              Object.keys(avatarData).forEach(id => {
                 if(avatarData[id].isStarter) return;
                 const item = avatarData[id];
-                const owned = activeUser.unlockedAvatars.includes(id);
+                const owned = (activeUser.unlockedAvatars || []).includes(id);
                 const div = document.createElement('div');
                 div.className = `p-3 rounded-xl text-center cursor-pointer border-2 ${owned ? 'border-green-500' : 'border-gray-200'}`;
-                div.innerHTML = `<div class='mb-2'>${item.svg || item.icon || '👤'}</div><div class='font-semibold'>${item.name || id}</div><div class='text-sm text-gray-500'>${owned ? 'Dimiliki' : `${item.price} Poin`}</div>`;
-                if (!owned) {
+                div.innerHTML = `<div class='mb-2'>${item.svg || item.icon || '👤'}</div><div class='font-semibold'>${item.name || id}</div><div class='text-sm text-gray-500'>${owned ? 'Dimiliki' : `${item.price || 0} Poin`}</div>`;
+                if (!owned && item.price) {
                     div.addEventListener('click', () => {
                         if (activeUser.points >= item.price) {
                             activeUser.points -= item.price;
+                            activeUser.unlockedAvatars = activeUser.unlockedAvatars || [];
                             activeUser.unlockedAvatars.push(id);
                             saveData();
                             playSound('purchase');
                             showMascotTip(`${item.name || id} berhasil dibeli!`);
-                            document.getElementById('open-avatar-shop').click(); // Refresh shop
+                            // refresh
+                            document.querySelector('[data-shop="tokoAvatar"]')?.click();
                         } else {
                             playSound('wrong');
                             showMascotTip('Poin tidak cukup.');
@@ -1163,7 +1553,105 @@
         // Fitur Guru
         domElements.contentCreatorBtn.addEventListener('click', () => { populateDuniaSelect(); showModal('content-creator-modal'); });
         domElements.closeCreatorBtn.addEventListener('click', hideModals);
-        document.getElementById('content-creator-form').addEventListener('submit', (e) => {
+        // Content creator enhancements: add/remove quiz choices, preview, and edit existing
+        const creatorForm = document.getElementById('content-creator-form');
+    const kuisContainer = document.createElement('div'); kuisContainer.id='kuis-multi-container';
+    // augment form UI (non-destructive)
+    const kuisSection = creatorForm.querySelectorAll('div.p-4')[2];
+    if (kuisSection && !kuisSection.querySelector('#kuis-multi-container')) kuisSection.appendChild(kuisContainer);
+
+        function buildKuisControls() {
+            kuisContainer.innerHTML = '';
+            const template = document.createElement('div');
+            template.className = 'space-y-2 kuis-block p-2 border rounded bg-white';
+            template.innerHTML = `
+                <textarea class="kuis-pertanyaan w-full p-2 border rounded" rows="2" placeholder="Pertanyaan kuis"></textarea>
+                <div class="kuis-choices space-y-1"></div>
+                <div class="flex gap-2 mt-2">
+                    <button type="button" class="add-choice bg-blue-500 text-white px-3 py-1 rounded">Tambah Pilihan</button>
+                    <button type="button" class="remove-kuis bg-red-500 text-white px-3 py-1 rounded">Hapus Kuis</button>
+                    <button type="button" class="preview-kuis bg-green-500 text-white px-3 py-1 rounded">Pratinjau</button>
+                </div>`;
+            // start with one block
+            const block = template.cloneNode(true);
+            kuisContainer.appendChild(block);
+            addChoiceListeners(block);
+        }
+
+        function addChoiceListeners(block) {
+            const choicesWrap = block.querySelector('.kuis-choices');
+            function addChoice(value='', correct=false) {
+                const el = document.createElement('div'); el.className='flex gap-2 items-center';
+                el.innerHTML = `<input class="choice-text flex-1 p-2 border rounded" value="${value}" placeholder="Pilihan..."/><label class="flex items-center gap-1"><input type="radio" name="correct-${Date.now()}" class="choice-correct" ${correct? 'checked':''}/> Benar</label>`;
+                const remove = document.createElement('button'); remove.type='button'; remove.className='ml-2 text-sm text-red-600'; remove.textContent='✖'; remove.addEventListener('click', ()=> el.remove());
+                el.appendChild(remove);
+                choicesWrap.appendChild(el);
+            }
+            block.querySelector('.add-choice').addEventListener('click', ()=> addChoice());
+            block.querySelector('.remove-kuis').addEventListener('click', ()=> block.remove());
+            block.querySelector('.preview-kuis').addEventListener('click', ()=> {
+                const q = block.querySelector('.kuis-pertanyaan').value.trim();
+                const choices = Array.from(block.querySelectorAll('.choice-text')).map(i=>i.value).filter(v=>v.trim());
+                if (!q || choices.length===0) { alert('Pertanyaan atau pilihan belum lengkap'); return; }
+                // quick preview modal
+                domElements.materiContent.innerHTML = `<h3 class="font-bold">Preview: ${q}</h3>` + choices.map(c=>`<div class="p-2 m-1 border rounded">${c}</div>`).join('');
+                switchScreen('materi-screen');
+            });
+            // add two default choices
+            addChoice(); addChoice();
+        }
+
+        buildKuisControls();
+        // Autosave draft: store form state periodically
+        const DRAFT_KEY = 'questoria_creator_draft_v1';
+        function saveCreatorDraft() {
+            try {
+                const draft = {
+                    duniaSelect: domElements.duniaSelect.value,
+                    duniaNama: document.getElementById('dunia-nama')?.value,
+                    duniaDesc: document.getElementById('dunia-deskripsi')?.value,
+                    duniaWarna: document.getElementById('dunia-warna')?.value,
+                    duniaIcon: document.getElementById('dunia-icon')?.value,
+                    judul: document.getElementById('submateri-judul')?.value,
+                    konten: document.getElementById('submateri-konten')?.value,
+                    funFact: document.getElementById('submateri-funfact')?.value,
+                    kuisBlocks: Array.from(kuisContainer.querySelectorAll('.kuis-block')).map(b => ({ q: b.querySelector('.kuis-pertanyaan').value, choices: Array.from(b.querySelectorAll('.choice-text')).map(i=>i.value), correctIndex: Array.from(b.querySelectorAll('.choice-correct')).findIndex(ch=>ch.checked) }))
+                };
+                localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+            } catch(e){}
+        }
+
+        function loadCreatorDraft() {
+            try {
+                const raw = localStorage.getItem(DRAFT_KEY); if (!raw) return;
+                const draft = JSON.parse(raw);
+                if (draft.duniaSelect) domElements.duniaSelect.value = draft.duniaSelect;
+                if (draft.duniaNama) document.getElementById('dunia-nama').value = draft.duniaNama;
+                if (draft.judul) document.getElementById('submateri-judul').value = draft.judul;
+                if (draft.konten) document.getElementById('submateri-konten').value = draft.konten;
+                // rebuild kuis blocks
+                if (draft.kuisBlocks && draft.kuisBlocks.length) {
+                    kuisContainer.innerHTML = '';
+                    draft.kuisBlocks.forEach(block => {
+                        const template = document.createElement('div'); template.className='space-y-2 kuis-block p-2 border rounded bg-white';
+                        template.innerHTML = `\n                <textarea class="kuis-pertanyaan w-full p-2 border rounded" rows="2" placeholder="Pertanyaan kuis">${(block.q||'')}</textarea>\n                <div class="kuis-choices space-y-1"></div>\n                <div class="flex gap-2 mt-2">\n                    <button type="button" class="add-choice bg-blue-500 text-white px-3 py-1 rounded">Tambah Pilihan</button>\n                    <button type="button" class="remove-kuis bg-red-500 text-white px-3 py-1 rounded">Hapus Kuis</button>\n                    <button type="button" class="preview-kuis bg-green-500 text-white px-3 py-1 rounded">Pratinjau</button>\n                </div>`;
+                        kuisContainer.appendChild(template);
+                        const choicesWrap = template.querySelector('.kuis-choices');
+                        (block.choices||[]).forEach((c,i)=>{
+                            const el = document.createElement('div'); el.className='flex gap-2 items-center';
+                            el.innerHTML = `<input class="choice-text flex-1 p-2 border rounded" value="${c||''}" placeholder="Pilihan..."/><label class="flex items-center gap-1"><input type="radio" name="correct-${Date.now()}-${Math.random()}" class="choice-correct" ${i===block.correctIndex? 'checked':''}/> Benar</label>`;
+                            const remove = document.createElement('button'); remove.type='button'; remove.className='ml-2 text-sm text-red-600'; remove.textContent='✖'; remove.addEventListener('click', ()=> el.remove());
+                            el.appendChild(remove); choicesWrap.appendChild(el);
+                        });
+                        addChoiceListeners(template);
+                    });
+                }
+            } catch(e){}
+        }
+
+        setInterval(saveCreatorDraft, 3000);
+        loadCreatorDraft();
+        creatorForm.addEventListener('submit', (e) => {
             e.preventDefault();
             try {
                 let duniaId = domElements.duniaSelect.value;
@@ -1182,46 +1670,229 @@
 
                 if (!duniaId) { alert("Pilih dunia atau buat yang baru."); return; }
 
-                const submateriId = `submateri_custom_${Date.now()}`;
-                const pilihan = [
-                    document.getElementById('kuis-pilihan1').value,
-                    document.getElementById('kuis-pilihan2').value,
-                    document.getElementById('kuis-pilihan3').value,
-                    document.getElementById('kuis-pilihan4').value,
-                ].filter(p => p.trim() !== '');
+                // determine if editing existing submateri
+                const editingMeta = creatorForm.dataset.editing ? JSON.parse(creatorForm.dataset.editing) : null;
 
-                edukasiData.sd.dunia[duniaId].subMateri[submateriId] = {
-                    judul: document.getElementById('submateri-judul').value,
-                    konten: document.getElementById('submateri-konten').value,
-                    funFact: document.getElementById('submateri-funfact').value,
-                    kuis: [{
-                        type: 'pilihan-ganda',
-                        pertanyaan: document.getElementById('kuis-pertanyaan').value,
-                        pilihan: pilihan,
-                        jawaban: document.getElementById('kuis-pilihan1').value,
-                        hint: document.getElementById('kuis-hint').value,
-                    }]
-                };
+                const targetSubId = editingMeta ? editingMeta.subId : `submateri_custom_${Date.now()}`;
 
-                userProfiles.forEach(user => {
-                    if (user.jenjang === 'sd' && user.progress.sd) {
-                        if (!user.progress.sd[duniaId]) { user.progress.sd[duniaId] = {}; }
-                        user.progress.sd[duniaId][submateriId] = { done: false };
+                // gather multi-kuis data from kuisContainer
+                const kuisBlocks = Array.from(kuisContainer.querySelectorAll('.kuis-block'));
+                const kuisList = kuisBlocks.map(b => {
+                    const q = b.querySelector('.kuis-pertanyaan').value.trim();
+                    const choices = Array.from(b.querySelectorAll('.choice-text')).map(i=>i.value).filter(v=>v.trim());
+                    const correct = Array.from(b.querySelectorAll('.choice-correct')).findIndex(el=>el.checked);
+                    return { type: 'pilihan-ganda', pertanyaan: q, pilihan: choices, jawaban: choices[correct]||choices[0]||'', hint: '' };
+                }).filter(k=>k.pertanyaan && k.pilihan && k.pilihan.length>0);
+
+                if (kuisList.length === 0) {
+                    alert('Tambahkan setidaknya 1 kuis lengkap.');
+                    return;
+                }
+
+                // If editing and dunia changed, we must move the submateri
+                if (editingMeta) {
+                    const { duniaId: oldDuniaId, subId: oldSubId } = editingMeta;
+                    // update content
+                    if (!edukasiData.sd.dunia[duniaId]) edukasiData.sd.dunia[duniaId] = { namaDunia: 'Dunia Baru', deskripsi: '', warna: 'blue', icon: '⭐', subMateri: {} };
+                    // If moving to a different dunia
+                    if (oldDuniaId !== duniaId) {
+                        // copy to new dunia and delete old
+                        edukasiData.sd.dunia[duniaId].subMateri[targetSubId] = {
+                            judul: document.getElementById('submateri-judul').value,
+                            konten: document.getElementById('submateri-konten').value,
+                            funFact: document.getElementById('submateri-funfact').value,
+                            kuis: kuisList
+                        };
+                        delete edukasiData.sd.dunia[oldDuniaId].subMateri[oldSubId];
+                        // move user progress
+                        userProfiles.forEach(u => {
+                            if (u.progress && u.progress.sd) {
+                                u.progress.sd[duniaId] = u.progress.sd[duniaId] || {};
+                                u.progress.sd[duniaId][targetSubId] = u.progress.sd[oldDuniaId] && u.progress.sd[oldDuniaId][oldSubId] ? u.progress.sd[oldDuniaId][oldSubId] : { done: false };
+                                if (u.progress.sd[oldDuniaId]) delete u.progress.sd[oldDuniaId][oldSubId];
+                            }
+                        });
+                    } else {
+                        // same dunia, overwrite
+                        edukasiData.sd.dunia[duniaId].subMateri[oldSubId] = {
+                            judul: document.getElementById('submateri-judul').value,
+                            konten: document.getElementById('submateri-konten').value,
+                            funFact: document.getElementById('submateri-funfact').value,
+                            kuis: kuisList
+                        };
                     }
-                });
+                    // clear editing metadata
+                    delete creatorForm.dataset.editing;
+                } else {
+                    // create new submateri
+                    if (!edukasiData.sd.dunia[duniaId]) edukasiData.sd.dunia[duniaId] = { namaDunia: 'Dunia Baru', deskripsi: '', warna: 'blue', icon: '⭐', subMateri: {} };
+                    edukasiData.sd.dunia[duniaId].subMateri[targetSubId] = {
+                        judul: document.getElementById('submateri-judul').value,
+                        konten: document.getElementById('submateri-konten').value,
+                        funFact: document.getElementById('submateri-funfact').value,
+                        kuis: kuisList
+                    };
+                    // add to users progress
+                    userProfiles.forEach(user => {
+                        if (user.jenjang === 'sd' && user.progress.sd) {
+                            if (!user.progress.sd[duniaId]) { user.progress.sd[duniaId] = {}; }
+                            user.progress.sd[duniaId][targetSubId] = { done: false };
+                        }
+                    });
+                }
 
                 saveData();
                 const submitBtn = e.target.querySelector('button[type="submit"]');
                 submitBtn.textContent = "Materi berhasil disimpan!";
+                // clear draft
+                localStorage.removeItem(DRAFT_KEY);
                 setTimeout(() => {
-                    e.target.reset(); hideModals(); renderDuniaMap();
+                    e.target.reset(); hideModals(); renderDuniaMap(); populateExistingSubmateri();
                     submitBtn.textContent = "Simpan Materi";
-                }, 2000);
+                }, 1200);
             } catch (error) { console.error("Error:", error); alert("Gagal menyimpan materi."); }
         });
+
+        // Keyboard shortcuts & utility bindings
+        window.addEventListener('keydown', (e)=>{
+            if (e.key === 's' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); exportData(); }
+            if (e.key === 'f' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); document.getElementById('world-search-input').classList.toggle('hidden'); document.getElementById('world-search-input').focus(); }
+            if (e.key === 'k' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); openGenericShop('tokoPeningkatan'); }
+        });
+
+    // wire shop hub open (safe)
+    document.querySelector('[data-shop="tokoAvatar"]')?.addEventListener('click', () => openGenericShop('tokoAvatar'));
+
+        // search input binding
+        const worldSearch = document.getElementById('world-search-input');
+        if (worldSearch) {
+            worldSearch.addEventListener('input', ()=> renderDuniaMap());
+            worldSearch.classList.add('hidden');
+        }
+
+        // import/export/reset DOM controls (in settings modal)
+        const importBtn = document.createElement('button'); importBtn.textContent='Impor Data'; importBtn.className='w-full p-2 mt-2 bg-white rounded';
+        const exportBtn = document.createElement('button'); exportBtn.textContent='Ekspor Data'; exportBtn.className='w-full p-2 mt-2 bg-white rounded';
+        const resetAchBtn = document.createElement('button'); resetAchBtn.textContent='Reset Prestasi'; resetAchBtn.className='w-full p-2 mt-2 bg-white rounded';
+        const fileInput = document.createElement('input'); fileInput.type='file'; fileInput.accept='application/json'; fileInput.className='hidden';
+        exportBtn.addEventListener('click', exportData);
+        importBtn.addEventListener('click', ()=> fileInput.click());
+        fileInput.addEventListener('change', (e)=> importData(e.target.files[0]));
+        resetAchBtn.addEventListener('click', ()=> { if(confirm('Reset semua prestasi?')) resetAllAchievements(); });
+        domElements.themeSelector.parentElement.appendChild(importBtn);
+        domElements.themeSelector.parentElement.appendChild(exportBtn);
+        domElements.themeSelector.parentElement.appendChild(resetAchBtn);
+        domElements.themeSelector.parentElement.appendChild(fileInput);
+        // Advanced import: merge another project's data (edu + shops)
+        importBtn.addEventListener('click', ()=> fileInput.click());
+        function importData(file) {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const parsed = JSON.parse(ev.target.result);
+                    // merge users (optional)
+                    if (parsed.edu) {
+                        // merge jenjang (sd) dunia/subMateri
+                        for (const jenjang in parsed.edu) {
+                            edukasiData[jenjang] = edukasiData[jenjang] || { dunia: {} };
+                            const srcDunia = parsed.edu[jenjang].dunia || {};
+                            for (const dId in srcDunia) {
+                                if (!edukasiData[jenjang].dunia[dId]) edukasiData[jenjang].dunia[dId] = srcDunia[dId];
+                                else {
+                                    // merge subMateri
+                                    const srcSub = srcDunia[dId].subMateri || {};
+                                    edukasiData[jenjang].dunia[dId].subMateri = edukasiData[jenjang].dunia[dId].subMateri || {};
+                                    for (const sId in srcSub) {
+                                        if (!edukasiData[jenjang].dunia[dId].subMateri[sId]) edukasiData[jenjang].dunia[dId].subMateri[sId] = srcSub[sId];
+                                    }
+                                }
+                            }
+                        }
+                        showMascotTip('Konten edukasi berhasil digabungkan.');
+                    }
+                    // merge shops
+                    if (parsed.shopData) {
+                        for (const k in parsed.shopData) {
+                            shopData[k] = shopData[k] || parsed.shopData[k];
+                            // copy items if missing
+                            const items = parsed.shopData[k].items || {};
+                            shopData[k].items = shopData[k].items || {};
+                            for (const id in items) if (!shopData[k].items[id]) shopData[k].items[id] = items[id];
+                        }
+                        showMascotTip('Data toko berhasil digabungkan.');
+                    }
+                    saveData(); renderDuniaMap();
+                } catch (err) { alert('File tidak valid atau format tidak dikenali.'); }
+            };
+            reader.readAsText(file);
+        }
+        
+        // Populate existing submateri list in creator modal
+        function populateExistingSubmateri() {
+            const list = document.getElementById('existing-list'); if (!list) return;
+            list.innerHTML = '';
+            const duniaList = edukasiData.sd.dunia || {};
+            for (const duniaId in duniaList) {
+                const dunia = duniaList[duniaId];
+                for (const subId in dunia.subMateri) {
+                    const sub = dunia.subMateri[subId];
+                    const row = document.createElement('div');
+                    row.className = 'p-2 bg-white rounded flex items-center justify-between border';
+                    row.innerHTML = `<div><div class="font-semibold">${sub.judul}</div><div class="text-xs text-gray-500">${dunia.namaDunia}</div></div>`;
+                    const actions = document.createElement('div');
+                    const editBtn = document.createElement('button'); editBtn.className='px-3 py-1 bg-blue-500 text-white rounded mr-2'; editBtn.textContent='Edit';
+                    const delBtn = document.createElement('button'); delBtn.className='px-3 py-1 bg-red-500 text-white rounded'; delBtn.textContent='Hapus';
+                    actions.appendChild(editBtn); actions.appendChild(delBtn); row.appendChild(actions);
+                    editBtn.addEventListener('click', ()=> loadSubmateriForEdit(duniaId, subId));
+                    delBtn.addEventListener('click', ()=> {
+                        if (!confirm('Hapus submateri ini? Tindakan ini akan menghapusnya dari semua pengguna.')) return;
+                        delete edukasiData.sd.dunia[duniaId].subMateri[subId];
+                        // remove progress entry from users
+                        userProfiles.forEach(u => {
+                            if (u.progress && u.progress.sd && u.progress.sd[duniaId]) { delete u.progress.sd[duniaId][subId]; }
+                        });
+                        saveData(); populateExistingSubmateri(); renderDuniaMap(); showMascotTip('Submateri dihapus.');
+                    });
+                    list.appendChild(row);
+                }
+            }
+        }
+
+        function loadSubmateriForEdit(duniaId, subId) {
+            const dunia = edukasiData.sd.dunia[duniaId];
+            const sub = dunia.subMateri[subId];
+            // ensure dunia select includes this dunia
+            populateDuniaSelect();
+            domElements.duniaSelect.value = duniaId;
+            document.getElementById('submateri-judul').value = sub.judul || '';
+            document.getElementById('submateri-konten').value = sub.konten || '';
+            document.getElementById('submateri-funfact').value = sub.funFact || '';
+            // clear kuisContainer and fill with existing kuis
+            kuisContainer.innerHTML = '';
+            (sub.kuis||[]).forEach(q => {
+                const template = document.createElement('div'); template.className='space-y-2 kuis-block p-2 border rounded bg-white';
+                template.innerHTML = `\n                <textarea class="kuis-pertanyaan w-full p-2 border rounded" rows="2" placeholder="Pertanyaan kuis">${q.pertanyaan||''}</textarea>\n                <div class="kuis-choices space-y-1"></div>\n                <div class="flex gap-2 mt-2">\n                    <button type="button" class="add-choice bg-blue-500 text-white px-3 py-1 rounded">Tambah Pilihan</button>\n                    <button type="button" class="remove-kuis bg-red-500 text-white px-3 py-1 rounded">Hapus Kuis</button>\n                    <button type="button" class="preview-kuis bg-green-500 text-white px-3 py-1 rounded">Pratinjau</button>\n                </div>`;
+                kuisContainer.appendChild(template);
+                const choicesWrap = template.querySelector('.kuis-choices');
+                (q.pilihan||[]).forEach((c,i)=>{
+                    const el = document.createElement('div'); el.className='flex gap-2 items-center';
+                    el.innerHTML = `<input class="choice-text flex-1 p-2 border rounded" value="${c||''}" placeholder="Pilihan..."/><label class="flex items-center gap-1"><input type="radio" name="correct-${Date.now()}" class="choice-correct" ${q.jawaban===c? 'checked':''}/> Benar</label>`;
+                    const remove = document.createElement('button'); remove.type='button'; remove.className='ml-2 text-sm text-red-600'; remove.textContent='✖'; remove.addEventListener('click', ()=> el.remove());
+                    el.appendChild(remove); choicesWrap.appendChild(el);
+                });
+                addChoiceListeners(template);
+            });
+            // mark form with editing meta
+            creatorForm.dataset.editing = JSON.stringify({ duniaId, subId });
+            showMascotTip('Submateri dimuat untuk diedit.');
+            // scroll to form top
+            document.querySelector('#content-creator-modal .modal-content')?.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ensure existing list updates when modal opened
+        document.querySelector('#content-creator-modal')?.addEventListener('click', ()=> populateExistingSubmateri());
         
         initializeApp();
     </script>
 </body>
 </html>
-
